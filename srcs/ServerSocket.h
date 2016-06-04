@@ -1,7 +1,13 @@
 #ifndef NET_SERVER_SOCKET_H
 # define NET_SERVER_SOCKET_H
 
-# include <netinet/in.h>
+# include "Platform.h"
+
+# ifdef PLATFORM_LINUX
+#  include <netinet/in.h>
+# elif defined PLATFORM_WINDOWS
+#  include <winsock2.h>
+#endif
 # include "Socket.h"
 # include <cstdint>
 

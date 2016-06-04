@@ -1,6 +1,8 @@
 #ifndef NET_SOCKET_H
 # define NET_SOCKET_H
 
+# include "Platform.h"
+
 # include "Buffer.h"
 # include <string>
 

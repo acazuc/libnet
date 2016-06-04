@@ -1,6 +1,9 @@
 #include "ServerSocket.h"
-#include <sys/socket.h>
-#include <strings.h>
+#ifdef PLATFORM_WINDOWS
+#elif defined PLATFORM_LINUX
+# include <sys/socket.h>
+#endif
+#include <cstring>
 #include <fcntl.h>
 
 namespace net
@@ -26,7 +29,7 @@ namespace net
 	{
 		if (!this->opened)
 			return (false);
-		bzero((char *)&server_addr, sizeof(server_addr));
+		memset((char *)&server_addr, 0, sizeof(server_addr));
 		server_addr.sin_family = AF_INET;
 		server_addr.sin_addr.s_addr = INADDR_ANY;
 		server_addr.sin_port = htons(port);
@@ -39,21 +42,30 @@ namespace net
 
 	bool ServerSocket::setBlocking(bool blocking)
 	{
-		if (!this->opened)
-			return (false);
-		int flags = fcntl(sockfd, F_GETFL, 0);
-		if (flags < 0)
-		{
-			return (false);
-		}
-		flags = blocking ? (flags&~SOCK_NONBLOCK) : (flags | SOCK_NONBLOCK);
-		return ((fcntl(sockfd, F_SETFL, flags) == 0) ? true : false);
+		#ifdef PLATFORM_WINDOWS
+			u_long iMode=1;
+			return (ioctlsocket(sockfd, FIONBIO, &iMode) == 0);
+		#elif defined PLATFORM_LINUX
+			if (!this->opened)
+				return (false);
+			int flags = fcntl(sockfd, F_GETFL, 0);
+			if (flags < 0)
+			{
+				return (false);
+			}
+			flags = blocking ? (flags&~SOCK_NONBLOCK) : (flags | SOCK_NONBLOCK);
+			return (fcntl(sockfd, F_SETFL, flags) == 0);
+		#endif
 	}
 
 	Socket *ServerSocket::accept()
 	{
 		struct sockaddr cli_addr;
-		socklen_t cli_len;
+		#ifdef PLATFORM_WINDOWS
+			int cli_len;
+		#elif defined PLATFORM_LINUX
+			socklen_t cli_len;
+		#endif
 		int newsockfd;
 
 		if (!this->bound)

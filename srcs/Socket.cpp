@@ -1,8 +1,13 @@
 #include "Socket.h"
-#include <sys/socket.h>
+# ifdef PLATFORM_LINUX
+#  include <netinet/in.h>
+#  include <netdb.h>
+# elif defined PLATFORM_WINDOWS
+#  include <winsock2.h>
+#  include <ws2tcpip.h>
+#endif
 #include <sys/types.h>
 #include <unistd.h>
-#include <netdb.h>
 #include <string.h>
 #include <fcntl.h>
 
@@ -47,7 +52,7 @@ namespace net
 			return (false);
 		if (!(server = gethostbyname(const_cast<char*>(address.c_str()))))
 			return (false);
-		bzero(&serv_addr, sizeof(serv_addr));
+		memset(&serv_addr, 0, sizeof(serv_addr));
 		serv_addr.sin_family = AF_INET;
 		memcpy(server->h_addr, &serv_addr.sin_addr.s_addr, server->h_length);
 		serv_addr.sin_port = htons(port);
@@ -115,13 +120,18 @@ namespace net
 
 	bool Socket::setBlocking(bool blocking)
 	{
-		if (!this->opened)
-			return (false);
-		int flags = fcntl(sockfd, F_GETFL, 0);
-		if (flags < 0)
-			return (false);
-		flags = blocking ? (flags&~SOCK_NONBLOCK) : (flags | SOCK_NONBLOCK);
-		return ((fcntl(sockfd, F_SETFL, flags) == 0) ? true : false);
+		#ifdef PLATFORM_WINDOWS
+			u_long iMode=1;
+			return (ioctlsocket(sockfd, FIONBIO, &iMode) == 0);
+		#elif defines PLATFORM_LINUX
+			if (!this->opened)
+				return (false);
+			int flags = fcntl(sockfd, F_GETFL, 0);
+			if (flags < 0)
+				return (false);
+			flags = blocking ? (flags&~SOCK_NONBLOCK) : (flags | SOCK_NONBLOCK);
+			return ((fcntl(sockfd, F_SETFL, flags) == 0) ? true : false);
+		#endif
 	}
 
 }
