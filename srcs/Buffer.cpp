@@ -21,6 +21,36 @@ namespace net
 		delete[] (this->datas);
 	}
 
+	uint16_t Buffer::htons(uint16_t value)
+	{
+		int num = 42;
+		if (*reinterpret_cast<const char*>(&num) == num)
+		{
+			const uint8_t high_part = static_cast<uint8_t>(value >> 8);
+			const uint8_t low_part = static_cast<uint8_t>(value & 0xFFLL);
+			return ((static_cast<uint16_t>(low_part) << 8) | high_part);
+		}
+		else
+		{
+			return (value);
+		}
+	}
+
+	uint32_t Buffer::htonl(uint32_t value)
+	{
+		int num = 42;
+		if (*reinterpret_cast<const char*>(&num) == num)
+		{
+			const uint16_t high_part = htons(static_cast<uint16_t>(value >> 16));
+			const uint16_t low_part = htons(static_cast<uint16_t>(value & 0xFFFFLL));
+			return ((static_cast<uint32_t>(low_part) << 16) | high_part);
+		}
+		else
+		{
+			return (value);
+		}
+	}
+
 	uint64_t Buffer::htonll(uint64_t value)
 	{
 		int num = 42;
@@ -29,6 +59,36 @@ namespace net
 			const uint32_t high_part = htonl(static_cast<uint32_t>(value >> 32));
 			const uint32_t low_part = htonl(static_cast<uint32_t>(value & 0xFFFFFFFFLL));
 			return ((static_cast<uint64_t>(low_part) << 32) | high_part);
+		}
+		else
+		{
+			return (value);
+		}
+	}
+
+	uint16_t Buffer::ntohs(uint16_t value)
+	{
+		int num = 42;
+		if (*reinterpret_cast<const char*>(&num) == num)
+		{
+			const uint8_t high_part = static_cast<uint8_t>(value >> 8);
+			const uint8_t low_part = static_cast<uint8_t>(value & 0xFFLL);
+			return ((static_cast<uint16_t>(low_part) << 8) | high_part);
+		}
+		else
+		{
+			return (value);
+		}
+	}
+
+	uint32_t Buffer::ntohl(uint32_t value)
+	{
+		int num = 42;
+		if (*reinterpret_cast<const char*>(&num) == num)
+		{
+			const uint16_t high_part = ntohs(static_cast<uint16_t>(value >> 16));
+			const uint16_t low_part = ntohs(static_cast<uint16_t>(value & 0xFFFFLL));
+			return ((static_cast<uint32_t>(low_part) << 16) | high_part);
 		}
 		else
 		{
