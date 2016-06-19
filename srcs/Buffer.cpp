@@ -1,4 +1,5 @@
 #include "Buffer.h"
+#include "SocketPlatform.h"
 #include <stdexcept>
 #include <iostream>
 
@@ -20,6 +21,36 @@ namespace net
 		delete[] (this->datas);
 	}
 
+	uint64_t Buffer::htonll(uint64_t value)
+	{
+		int num = 42;
+		if (*reinterpret_cast<const char*>(&num) == num)
+		{
+			const uint32_t high_part = htonl(static_cast<uint32_t>(value >> 32));
+			const uint32_t low_part = htonl(static_cast<uint32_t>(value & 0xFFFFFFFFLL));
+			return ((static_cast<uint64_t>(low_part) << 32) | high_part);
+		}
+		else
+		{
+			return (value);
+		}
+	}
+
+	uint64_t Buffer::ntohll(uint64_t value)
+	{
+		int num = 42;
+		if (*reinterpret_cast<const char*>(&num) == num)
+		{
+			const uint32_t high_part = ntohl(static_cast<uint32_t>(value >> 32));
+			const uint32_t low_part = ntohl(static_cast<uint32_t>(value & 0xFFFFFFFFLL));
+			return ((static_cast<uint64_t>(low_part) << 32) | high_part);
+		}
+		else
+		{
+			return (value);
+		}
+	}
+
 	void Buffer::writeBytes(void *src, size_t len)
 	{
 		if (this->position + len > this->limit)
@@ -33,13 +64,70 @@ namespace net
 
 	void Buffer::writeBool(bool value)
 	{
-		uint8_t val;
+		writeUInt8(value ? 1 : 0);
+	}
 
-		if (value)
-			val = 1;
-		else
-			val = 0;
-		writeBytes(&val, 1);
+	void Buffer::writeInt8(int8_t value)
+	{
+		writeBytes(&value, 1);
+	}
+
+	void Buffer::writeUInt8(uint8_t value)
+	{
+		writeBytes(&value, 1);
+	}
+
+	void Buffer::writeInt16(int16_t value)
+	{
+		uint16_t val = htons(static_cast<uint16_t>(value));
+		writeBytes(&val, 2);
+
+	}
+	void Buffer::writeUInt16(uint16_t value)
+	{
+		uint16_t val = htons(value);
+		writeBytes(&val, 2);
+	}
+
+	void Buffer::writeInt32(int32_t value)
+	{
+		uint32_t val = htonl(static_cast<uint32_t>(value));
+		writeBytes(&val, 4);
+	}
+
+	void Buffer::writeUInt32(uint32_t value)
+	{
+		uint32_t val = htonl(value);
+		writeBytes(&val, 4);
+	}
+
+	void Buffer::writeInt64(int64_t value)
+	{
+		uint64_t val = htonll(static_cast<uint64_t>(value));
+		writeBytes(&val, 8);
+	}
+
+	void Buffer::writeUInt64(uint64_t value)
+	{
+		uint64_t val = htonll(value);
+		writeBytes(&val, 8);
+	}
+
+	void Buffer::writeFloat(float value)
+	{
+		uint32_t val = htonl(static_cast<uint32_t>(value));
+		writeBytes(&val, 4);
+	}
+
+	void Buffer::writeDouble(double value)
+	{
+		uint64_t val = htonll(static_cast<uint64_t>(value));
+		writeBytes(&val, 8);
+	}
+
+	void Buffer::writeChar(char value)
+	{
+		writeBytes(&value, 1);
 	}
 
 	void Buffer::writeString(std::string &value)
@@ -68,10 +156,7 @@ namespace net
 
 	bool Buffer::readBool()
 	{
-		uint8_t value;
-
-		readBytes(&value, 1);
-		return (value != 0);
+		return (readUInt8() != 0);
 	}
 
 	int8_t Buffer::readInt8()
@@ -95,7 +180,7 @@ namespace net
 		int16_t value;
 
 		readBytes(&value, 2);
-		return (value);
+		return (static_cast<int16_t>(ntohs(static_cast<uint16_t>(value))));
 	}
 
 	uint16_t Buffer::readUInt16()
@@ -103,7 +188,7 @@ namespace net
 		uint16_t value;
 
 		readBytes(&value, 2);
-		return (value);
+		return (ntohs(value));
 	}
 
 	int32_t Buffer::readInt32()
@@ -111,7 +196,7 @@ namespace net
 		int32_t value;
 
 		readBytes(&value, 4);
-		return (value);
+		return (static_cast<int32_t>(ntohl(static_cast<uint32_t>(value))));
 	}
 
 	uint32_t Buffer::readUInt32()
@@ -119,7 +204,7 @@ namespace net
 		uint32_t value;
 
 		readBytes(&value, 4);
-		return (value);
+		return (ntohl(value));
 	}
 
 	int64_t Buffer::readInt64()
@@ -127,7 +212,7 @@ namespace net
 		int64_t value;
 
 		readBytes(&value, 8);
-		return (value);
+		return (static_cast<int64_t>(ntohll(static_cast<uint64_t>(value))));
 	}
 
 	uint64_t Buffer::readUInt64()
@@ -135,7 +220,7 @@ namespace net
 		uint64_t value;
 
 		readBytes(&value, 8);
-		return (value);
+		return (ntohll(value));
 	}
 
 	float Buffer::readFloat()
@@ -143,7 +228,7 @@ namespace net
 		float value;
 
 		readBytes(&value, 4);
-		return (value);
+		return (static_cast<float>(ntohl(static_cast<uint32_t>(value))));
 	}
 
 	double Buffer::readDouble()
@@ -151,7 +236,7 @@ namespace net
 		double value;
 
 		readBytes(&value, 8);
-		return (value);
+		return (static_cast<double>(ntohl(static_cast<uint64_t>(value))));
 	}
 
 	char Buffer::readChar()

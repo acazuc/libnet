@@ -15,23 +15,25 @@ namespace net
 			uint32_t capacity;
 			uint32_t limit;
 			char *datas;
+			uint64_t htonll(uint64_t value);
+			uint64_t ntohll(uint64_t value);
 
 		public:
 			Buffer();
 			~Buffer();
 			void writeBytes(void *src, size_t len);
 			void writeBool(bool value);
-			void writeInt8(int8_t value) {writeBytes(&value, 1);};
-			void writeUInt8(uint8_t value) {writeBytes(&value, 1);};
-			void writeInt16(int16_t value) {writeBytes(&value, 2);};
-			void writeUInt16(uint16_t value) {writeBytes(&value, 2);};
-			void writeInt32(int32_t value) {writeBytes(&value, 4);};
-			void writeUInt32(uint32_t value) {writeBytes(&value, 4);};
-			void writeInt64(int64_t value) {writeBytes(&value, 8);};
-			void writeUInt64(uint64_t value) {writeBytes(&value, 8);};
-			void writeFloat(float value) {writeBytes(&value, 4);};
-			void writeDouble(double value) {writeBytes(&value, 8);};
-			void writeChar(char value) {writeBytes(&value, 1);};
+			void writeInt8(int8_t value);
+			void writeUInt8(uint8_t value);
+			void writeInt16(int16_t value);
+			void writeUInt16(uint16_t value);
+			void writeInt32(int32_t value);
+			void writeUInt32(uint32_t value);
+			void writeInt64(int64_t value);
+			void writeUInt64(uint64_t value);
+			void writeFloat(float value);
+			void writeDouble(double value);
+			void writeChar(char value);
 			void writeString(std::string &value);
 			void readBytes(void *dst, size_t len);
 			bool readBool();

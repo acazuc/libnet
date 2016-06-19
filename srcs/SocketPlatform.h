@@ -6,6 +6,7 @@
 # elif defined PLATFORM_LINUX
 #  include <sys/socket.h>
 #  include <netinet/in.h>
+#  include <arpa/inet.h>
 #  include <unistd.h>
 #  include <netdb.h>
 #  include <fcntl.h>
