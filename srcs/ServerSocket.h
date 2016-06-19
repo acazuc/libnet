@@ -1,13 +1,7 @@
 #ifndef NET_SERVER_SOCKET_H
 # define NET_SERVER_SOCKET_H
 
-# include "Platform.h"
-
-# ifdef PLATFORM_LINUX
-#  include <netinet/in.h>
-# elif defined PLATFORM_WINDOWS
-#  include <winsock2.h>
-#endif
+# include "SocketPlatform.h"
 # include "Socket.h"
 # include <cstdint>
 
@@ -18,10 +12,10 @@ namespace net
 	{
 
 		private:
-			struct sockaddr_in server_addr;
+			SOCKADDR_IN server_addr;
 			bool opened;
 			bool bound;
-			int sockfd;
+			SOCKET sockfd;
 
 		public:
 			ServerSocket();

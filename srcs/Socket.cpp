@@ -1,20 +1,11 @@
 #include "Socket.h"
-# ifdef PLATFORM_LINUX
-#  include <netinet/in.h>
-#  include <netdb.h>
-# elif defined PLATFORM_WINDOWS
-#  include <winsock2.h>
-#  include <ws2tcpip.h>
-#endif
-#include <sys/types.h>
-#include <unistd.h>
-#include <string.h>
-#include <fcntl.h>
+#include <cstring>
+#include <iostream>
 
 namespace net
 {
 
-	Socket::Socket(int sock)
+	Socket::Socket(SOCKET sock)
 	{
 		this->connected = true;
 		this->sockfd = sock;
@@ -30,41 +21,53 @@ namespace net
 	Socket::~Socket()
 	{
 		if (this->opened)
-			close(sockfd);
+			closesocket(sockfd);
 	}
 
 	bool Socket::open()
 	{
 		if (this->opened)
 			return (false);
-		if ((sockfd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) == -1)
+		if ((this->sockfd = ::socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) == INVALID_SOCKET)
 			return (false);
 		this->opened = true;
 		return (true);
 	}
 
-	bool Socket::connect(std::string &address, int port)
+	bool Socket::close()
 	{
-		struct sockaddr_in serv_addr;
+		if (this->opened)
+		{
+			closesocket(sockfd);
+			this->opened = false;
+			this->connected = false;
+			return (true);
+		}
+		return (false);
+	}
+
+	bool Socket::connect(std::string host, uint16_t port)
+	{
+		SOCKADDR_IN serv_addr;
 		struct hostent *server;
 
 		if (!this->opened)
 			return (false);
-		if (!(server = gethostbyname(const_cast<char*>(address.c_str()))))
+		if (!(server = gethostbyname(host.c_str())))
 			return (false);
 		memset(&serv_addr, 0, sizeof(serv_addr));
 		serv_addr.sin_family = AF_INET;
-		memcpy(server->h_addr, &serv_addr.sin_addr.s_addr, server->h_length);
+		memcpy(&serv_addr.sin_addr.s_addr, server->h_addr, server->h_length);
 		serv_addr.sin_port = htons(port);
-		if (::connect(this->sockfd, (struct sockaddr*)&serv_addr, sizeof(serv_addr)) < 0)
+		if (::connect(this->sockfd, (struct sockaddr*)&serv_addr, sizeof(serv_addr)) == SOCKET_ERROR && errno != EINPROGRESS)
 			return (false);
 		this->connected = true;
 		return (true);
 	}
 
-	ssize_t Socket::send(Buffer &buffer)
+	int32_t Socket::send(Buffer &buffer)
 	{
-		ssize_t written;
+		int32_t written;
 		int retry;
 
 		if (!this->connected)
@@ -73,8 +76,19 @@ namespace net
 		retry = 0;
 		while (retry < 5 && buffer.getRemaining() > 0)
 		{
-			if ((written = ::write(sockfd, buffer.getDatas() + buffer.getPosition(), buffer.getRemaining())) == -1 && errno != EWOULDBLOCK && errno != EAGAIN)
-				return (-1);
+			if ((written = ::send(sockfd, buffer.getDatas() + buffer.getPosition(), buffer.getRemaining(), 0)) == SOCKET_ERROR)
+			{
+				#ifdef PLATFORM_WINDOWS
+					int error = WSAGetLastError();
+					if (error != WSAEWOULDBLOCK && error != WSAEMSGSIZE)
+						return (-1);
+				#elif defined PLATFORM_LINUX
+					if (errno != EWOULDBLOCK && errno != EAGAIN)
+					return (-1);
+				#else
+				# error Platform not supported
+				#endif
+			}
 			buffer.setPosition(buffer.getPosition() + written);
 			retry++;
 		}
@@ -92,9 +106,9 @@ namespace net
 		return (written);
 	}
 
-	ssize_t Socket::read(Buffer &buffer)
+	int32_t Socket::read(Buffer &buffer)
 	{
-		ssize_t readed;
+		int32_t readed;
 
 		if (!this->connected)
 			return (-1);
@@ -109,8 +123,19 @@ namespace net
 		{
 			buffer.clear();
 		}
-		if ((readed = ::read(sockfd, buffer.getDatas() + buffer.getPosition(), buffer.getRemaining())) == -1 && errno != EWOULDBLOCK && errno != EAGAIN)
-			return (-1);
+		if ((readed = ::recv(sockfd, buffer.getDatas() + buffer.getPosition(), buffer.getRemaining(), 0)) == SOCKET_ERROR)
+		{
+			#ifdef PLATFORM_WINDOWS
+				int error = WSAGetLastError();
+				if (error != WSAEWOULDBLOCK && error != WSAEMSGSIZE)
+					return (-1);
+			#elif defined PLATFORM_LINUX
+				if (errno != EWOULDBLOCK && errno != EAGAIN)
+				return (-1);
+			#else
+			# error Platform not supported
+			#endif
+		}
 		if (readed == -1)
 			readed = 0;
 		buffer.setPosition(readed);
@@ -121,16 +146,18 @@ namespace net
 	bool Socket::setBlocking(bool blocking)
 	{
 		#ifdef PLATFORM_WINDOWS
-			u_long iMode=1;
+			u_long iMode = blocking ? 0 : 1;
 			return (ioctlsocket(sockfd, FIONBIO, &iMode) == 0);
-		#elif defines PLATFORM_LINUX
+		#elif defined PLATFORM_LINUX
 			if (!this->opened)
 				return (false);
 			int flags = fcntl(sockfd, F_GETFL, 0);
 			if (flags < 0)
 				return (false);
-			flags = blocking ? (flags&~SOCK_NONBLOCK) : (flags | SOCK_NONBLOCK);
+			flags = blocking ? (flags & ~O_NONBLOCK) : (flags | O_NONBLOCK);
 			return ((fcntl(sockfd, F_SETFL, flags) == 0) ? true : false);
+		#else
+			#error Not supported platform
 		#endif
 	}
 

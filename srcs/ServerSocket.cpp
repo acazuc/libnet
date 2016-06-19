@@ -1,10 +1,5 @@
 #include "ServerSocket.h"
-#ifdef PLATFORM_WINDOWS
-#elif defined PLATFORM_LINUX
-# include <sys/socket.h>
-#endif
 #include <cstring>
-#include <fcntl.h>
 
 namespace net
 {
@@ -19,7 +14,7 @@ namespace net
 	{
 		if (this->opened)
 			return (false);
-		if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
+		if ((sockfd = ::socket(AF_INET, SOCK_STREAM, 0)) == INVALID_SOCKET)
 			return (false);
 		this->opened = true;
 		return (true);
@@ -33,9 +28,9 @@ namespace net
 		server_addr.sin_family = AF_INET;
 		server_addr.sin_addr.s_addr = INADDR_ANY;
 		server_addr.sin_port = htons(port);
-		if (::bind(sockfd, (struct sockaddr*)&server_addr, sizeof(server_addr)) < 0)
+		if (::bind(sockfd, (struct sockaddr*)&server_addr, sizeof(server_addr)) == SOCKET_ERROR)
 			return (false);
-		listen(sockfd, 100);
+		listen(sockfd, 255);
 		this->bound = true;
 		return (true);
 	}
@@ -43,30 +38,26 @@ namespace net
 	bool ServerSocket::setBlocking(bool blocking)
 	{
 		#ifdef PLATFORM_WINDOWS
-			u_long iMode=1;
+			u_long iMode = blocking ? 0 : 1;
 			return (ioctlsocket(sockfd, FIONBIO, &iMode) == 0);
 		#elif defined PLATFORM_LINUX
 			if (!this->opened)
 				return (false);
 			int flags = fcntl(sockfd, F_GETFL, 0);
 			if (flags < 0)
-			{
 				return (false);
-			}
-			flags = blocking ? (flags&~SOCK_NONBLOCK) : (flags | SOCK_NONBLOCK);
-			return (fcntl(sockfd, F_SETFL, flags) == 0);
+			flags = blocking ? (flags & ~O_NONBLOCK) : (flags | O_NONBLOCK);
+			return ((fcntl(sockfd, F_SETFL, flags) == 0) ? true : false);
+		#else
+			#error Not supported platform
 		#endif
 	}
 
 	Socket *ServerSocket::accept()
 	{
 		struct sockaddr cli_addr;
-		#ifdef PLATFORM_WINDOWS
-			int cli_len;
-		#elif defined PLATFORM_LINUX
-			socklen_t cli_len;
-		#endif
-		int newsockfd;
+		SOCKLEN_T cli_len;
+		SOCKET newsockfd;
 
 		if (!this->bound)
 			return (NULL);
