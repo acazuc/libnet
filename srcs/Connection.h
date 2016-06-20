@@ -16,10 +16,13 @@ namespace net
 			Socket &socket;
 			Buffer rBuffer;
 			Buffer wBuffer;
+			uint32_t packetStart;
 
 		public:
 			Connection(Socket &socket);
 			~Connection();
+			void startPacket();
+			void endPacket();
 			inline int32_t read() {return (this->socket.read(rBuffer));};
 			inline int32_t send() {return (this->socket.send(wBuffer));};
 			inline void writeBool(bool value) {this->wBuffer.writeBool(value);};

@@ -115,7 +115,7 @@ namespace net
 	{
 		if (this->position + len > this->limit)
 			throw std::out_of_range("Buffer overflow");
-		for (size_t i = 0;i < len;i++)
+		for (size_t i = 0; i < len; i++)
 		{
 			this->datas[this->position] = ((char*)src)[i];
 			this->position++;
@@ -175,13 +175,13 @@ namespace net
 
 	void Buffer::writeFloat(float value)
 	{
-		uint32_t val = b_htonl(static_cast<uint32_t>(value));
+		uint32_t val = b_htonl(*reinterpret_cast<uint32_t*>(&value));
 		writeBytes(&val, 4);
 	}
 
 	void Buffer::writeDouble(double value)
 	{
-		uint64_t val = b_htonll(static_cast<uint64_t>(value));
+		uint64_t val = b_htonll(*reinterpret_cast<uint64_t*>(&value));
 		writeBytes(&val, 8);
 	}
 
@@ -206,8 +206,8 @@ namespace net
 	void Buffer::readBytes(void *dst, size_t len)
 	{
 		if (this->position + len > this->limit)
-			throw std::out_of_range("Buffer overflow");
-		for (size_t i = 0;i < len;i++)
+			throw std::out_of_range("Buffer underflow");
+		for (size_t i = 0; i < len; i++)
 		{
 			((char*)dst)[i] = this->datas[this->position];
 			this->position++;
@@ -286,17 +286,21 @@ namespace net
 	float Buffer::readFloat()
 	{
 		float value;
+		uint32_t tmp;
 
 		readBytes(&value, 4);
-		return (static_cast<float>(b_ntohl(static_cast<uint32_t>(value))));
+		tmp = b_ntohl(*reinterpret_cast<uint32_t*>(&value));
+		return (*reinterpret_cast<float*>(&tmp));
 	}
 
 	double Buffer::readDouble()
 	{
 		double value;
+		uint64_t tmp;
 
 		readBytes(&value, 8);
-		return (static_cast<double>(b_ntohl(static_cast<uint64_t>(value))));
+		tmp = b_ntohl(*reinterpret_cast<uint64_t*>(&value));
+		return (*reinterpret_cast<double*>(&tmp));
 	}
 
 	char Buffer::readChar()

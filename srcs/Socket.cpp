@@ -80,7 +80,7 @@ namespace net
 			{
 				#ifdef PLATFORM_WINDOWS
 					int error = WSAGetLastError();
-					if (error != WSAEWOULDBLOCK && error != WSAEMSGSIZE)
+					if (error != WSAEWOULDBLOCK)
 						return (-1);
 				#elif defined PLATFORM_LINUX
 					if (errno != EWOULDBLOCK && errno != EAGAIN)
@@ -94,10 +94,11 @@ namespace net
 		}
 		if (buffer.getRemaining() > 0)
 		{
-			char tmp[buffer.getRemaining()];
-			memcpy(tmp, buffer.getDatas() + buffer.getPosition(), sizeof(tmp));
+			uint16_t remaining = buffer.getRemaining();
+			char tmp[remaining];
+			memcpy(tmp, buffer.getDatas() + buffer.getPosition(), remaining);
 			buffer.clear();
-			buffer.writeBytes(tmp, sizeof(tmp));
+			buffer.writeBytes(tmp, remaining);
 		}
 		else
 		{
@@ -114,10 +115,11 @@ namespace net
 			return (-1);
 		if (buffer.getRemaining() > 0)
 		{
-			char tmp[buffer.getRemaining()];
-			memcpy(tmp, buffer.getDatas() + buffer.getPosition(), sizeof(tmp));
+			uint16_t remaining = buffer.getRemaining();
+			char tmp[remaining];
+			memcpy(tmp, buffer.getDatas() + buffer.getPosition(), remaining);
 			buffer.clear();
-			buffer.writeBytes(tmp, sizeof(tmp));
+			buffer.writeBytes(tmp, remaining);
 		}
 		else
 		{
@@ -127,18 +129,24 @@ namespace net
 		{
 			#ifdef PLATFORM_WINDOWS
 				int error = WSAGetLastError();
-				if (error != WSAEWOULDBLOCK && error != WSAEMSGSIZE)
+				if (error != WSAEWOULDBLOCK)
+				{
+					buffer.flip();
 					return (-1);
+				}
 			#elif defined PLATFORM_LINUX
 				if (errno != EWOULDBLOCK && errno != EAGAIN)
-				return (-1);
+				{
+					buffer.flip();
+					return (-1);
+				}
 			#else
 			# error Platform not supported
 			#endif
 		}
 		if (readed == -1)
 			readed = 0;
-		buffer.setPosition(readed);
+		buffer.setPosition(buffer.getPosition() + readed);
 		buffer.flip();
 		return (readed);
 	}
