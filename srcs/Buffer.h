@@ -15,12 +15,12 @@ namespace net
 			uint32_t capacity;
 			uint32_t limit;
 			char *datas;
-			uint16_t htons(uint16_t value);
-			uint32_t htonl(uint32_t value);
-			uint64_t htonll(uint64_t value);
-			uint16_t ntohs(uint16_t value);
-			uint32_t ntohl(uint32_t value);
-			uint64_t ntohll(uint64_t value);
+			uint16_t b_htons(uint16_t value);
+			uint32_t b_htonl(uint32_t value);
+			uint64_t b_htonll(uint64_t value);
+			uint16_t b_ntohs(uint16_t value);
+			uint32_t b_ntohl(uint32_t value);
+			uint64_t b_ntohll(uint64_t value);
 
 		public:
 			Buffer();

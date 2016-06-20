@@ -21,7 +21,7 @@ namespace net
 		delete[] (this->datas);
 	}
 
-	uint16_t Buffer::htons(uint16_t value)
+	uint16_t Buffer::b_htons(uint16_t value)
 	{
 		int num = 42;
 		if (*reinterpret_cast<const char*>(&num) == num)
@@ -36,13 +36,13 @@ namespace net
 		}
 	}
 
-	uint32_t Buffer::htonl(uint32_t value)
+	uint32_t Buffer::b_htonl(uint32_t value)
 	{
 		int num = 42;
 		if (*reinterpret_cast<const char*>(&num) == num)
 		{
-			const uint16_t high_part = htons(static_cast<uint16_t>(value >> 16));
-			const uint16_t low_part = htons(static_cast<uint16_t>(value & 0xFFFF));
+			const uint16_t high_part = b_htons(static_cast<uint16_t>(value >> 16));
+			const uint16_t low_part = b_htons(static_cast<uint16_t>(value & 0xFFFF));
 			return ((static_cast<uint32_t>(low_part) << 16) | high_part);
 		}
 		else
@@ -51,13 +51,13 @@ namespace net
 		}
 	}
 
-	uint64_t Buffer::htonll(uint64_t value)
+	uint64_t Buffer::b_htonll(uint64_t value)
 	{
 		int num = 42;
 		if (*reinterpret_cast<const char*>(&num) == num)
 		{
-			const uint32_t high_part = htonl(static_cast<uint32_t>(value >> 32));
-			const uint32_t low_part = htonl(static_cast<uint32_t>(value & 0xFFFFFFFF));
+			const uint32_t high_part = b_htonl(static_cast<uint32_t>(value >> 32));
+			const uint32_t low_part = b_htonl(static_cast<uint32_t>(value & 0xFFFFFFFF));
 			return ((static_cast<uint64_t>(low_part) << 32) | high_part);
 		}
 		else
@@ -66,7 +66,7 @@ namespace net
 		}
 	}
 
-	uint16_t Buffer::ntohs(uint16_t value)
+	uint16_t Buffer::b_ntohs(uint16_t value)
 	{
 		int num = 42;
 		if (*reinterpret_cast<const char*>(&num) == num)
@@ -81,13 +81,13 @@ namespace net
 		}
 	}
 
-	uint32_t Buffer::ntohl(uint32_t value)
+	uint32_t Buffer::b_ntohl(uint32_t value)
 	{
 		int num = 42;
 		if (*reinterpret_cast<const char*>(&num) == num)
 		{
-			const uint16_t high_part = ntohs(static_cast<uint16_t>(value >> 16));
-			const uint16_t low_part = ntohs(static_cast<uint16_t>(value & 0xFFFF));
+			const uint16_t high_part = b_ntohs(static_cast<uint16_t>(value >> 16));
+			const uint16_t low_part = b_ntohs(static_cast<uint16_t>(value & 0xFFFF));
 			return ((static_cast<uint32_t>(low_part) << 16) | high_part);
 		}
 		else
@@ -96,13 +96,13 @@ namespace net
 		}
 	}
 
-	uint64_t Buffer::ntohll(uint64_t value)
+	uint64_t Buffer::b_ntohll(uint64_t value)
 	{
 		int num = 42;
 		if (*reinterpret_cast<const char*>(&num) == num)
 		{
-			const uint32_t high_part = ntohl(static_cast<uint32_t>(value >> 32));
-			const uint32_t low_part = ntohl(static_cast<uint32_t>(value & 0xFFFFFFFF));
+			const uint32_t high_part = b_ntohl(static_cast<uint32_t>(value >> 32));
+			const uint32_t low_part = b_ntohl(static_cast<uint32_t>(value & 0xFFFFFFFF));
 			return ((static_cast<uint64_t>(low_part) << 32) | high_part);
 		}
 		else
@@ -139,49 +139,49 @@ namespace net
 
 	void Buffer::writeInt16(int16_t value)
 	{
-		uint16_t val = htons(static_cast<uint16_t>(value));
+		uint16_t val = b_htons(static_cast<uint16_t>(value));
 		writeBytes(&val, 2);
 
 	}
 	void Buffer::writeUInt16(uint16_t value)
 	{
-		uint16_t val = htons(value);
+		uint16_t val = b_htons(value);
 		writeBytes(&val, 2);
 	}
 
 	void Buffer::writeInt32(int32_t value)
 	{
-		uint32_t val = htonl(static_cast<uint32_t>(value));
+		uint32_t val = b_htonl(static_cast<uint32_t>(value));
 		writeBytes(&val, 4);
 	}
 
 	void Buffer::writeUInt32(uint32_t value)
 	{
-		uint32_t val = htonl(value);
+		uint32_t val = b_htonl(value);
 		writeBytes(&val, 4);
 	}
 
 	void Buffer::writeInt64(int64_t value)
 	{
-		uint64_t val = htonll(static_cast<uint64_t>(value));
+		uint64_t val = b_htonll(static_cast<uint64_t>(value));
 		writeBytes(&val, 8);
 	}
 
 	void Buffer::writeUInt64(uint64_t value)
 	{
-		uint64_t val = htonll(value);
+		uint64_t val = b_htonll(value);
 		writeBytes(&val, 8);
 	}
 
 	void Buffer::writeFloat(float value)
 	{
-		uint32_t val = htonl(static_cast<uint32_t>(value));
+		uint32_t val = b_htonl(static_cast<uint32_t>(value));
 		writeBytes(&val, 4);
 	}
 
 	void Buffer::writeDouble(double value)
 	{
-		uint64_t val = htonll(static_cast<uint64_t>(value));
+		uint64_t val = b_htonll(static_cast<uint64_t>(value));
 		writeBytes(&val, 8);
 	}
 
@@ -240,7 +240,7 @@ namespace net
 		int16_t value;
 
 		readBytes(&value, 2);
-		return (static_cast<int16_t>(ntohs(static_cast<uint16_t>(value))));
+		return (static_cast<int16_t>(b_ntohs(static_cast<uint16_t>(value))));
 	}
 
 	uint16_t Buffer::readUInt16()
@@ -256,7 +256,7 @@ namespace net
 		int32_t value;
 
 		readBytes(&value, 4);
-		return (static_cast<int32_t>(ntohl(static_cast<uint32_t>(value))));
+		return (static_cast<int32_t>(b_ntohl(static_cast<uint32_t>(value))));
 	}
 
 	uint32_t Buffer::readUInt32()
@@ -272,7 +272,7 @@ namespace net
 		int64_t value;
 
 		readBytes(&value, 8);
-		return (static_cast<int64_t>(ntohll(static_cast<uint64_t>(value))));
+		return (static_cast<int64_t>(b_ntohll(static_cast<uint64_t>(value))));
 	}
 
 	uint64_t Buffer::readUInt64()
@@ -280,7 +280,7 @@ namespace net
 		uint64_t value;
 
 		readBytes(&value, 8);
-		return (ntohll(value));
+		return (b_ntohll(value));
 	}
 
 	float Buffer::readFloat()
@@ -288,7 +288,7 @@ namespace net
 		float value;
 
 		readBytes(&value, 4);
-		return (static_cast<float>(ntohl(static_cast<uint32_t>(value))));
+		return (static_cast<float>(b_ntohl(static_cast<uint32_t>(value))));
 	}
 
 	double Buffer::readDouble()
@@ -296,7 +296,7 @@ namespace net
 		double value;
 
 		readBytes(&value, 8);
-		return (static_cast<double>(ntohl(static_cast<uint64_t>(value))));
+		return (static_cast<double>(b_ntohl(static_cast<uint64_t>(value))));
 	}
 
 	char Buffer::readChar()
