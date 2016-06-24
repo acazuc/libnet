@@ -68,42 +68,36 @@ namespace net
 	int32_t Socket::send(Buffer &buffer)
 	{
 		int32_t written;
-		int retry;
 
 		if (!this->connected)
 			return (-1);
 		buffer.flip();
-		retry = 0;
-		while (retry < 5 && buffer.getRemaining() > 0)
+		if ((written = ::send(sockfd, buffer.getDatas() + buffer.getPosition(), buffer.getRemaining(), 0)) == SOCKET_ERROR)
 		{
-			if ((written = ::send(sockfd, buffer.getDatas() + buffer.getPosition(), buffer.getRemaining(), 0)) == SOCKET_ERROR)
-			{
-				#ifdef PLATFORM_WINDOWS
-					int error = WSAGetLastError();
-					if (error != WSAEWOULDBLOCK)
-						return (-1);
-				#elif defined PLATFORM_LINUX
-					if (errno != EWOULDBLOCK && errno != EAGAIN)
+			#ifdef PLATFORM_WINDOWS
+				int error = WSAGetLastError();
+				if (error != WSAEWOULDBLOCK)
 					return (-1);
-				#else
-				# error Platform not supported
-				#endif
-			}
-			buffer.setPosition(buffer.getPosition() + written);
-			retry++;
+			#elif defined PLATFORM_LINUX
+				if (errno != EWOULDBLOCK && errno != EAGAIN)
+					return (-1);
+			#else
+			# error Platform not supported
+			#endif
 		}
-		if (buffer.getRemaining() > 0)
+		if (written == -1)
+			written = 0;
+		buffer.setPosition(buffer.getPosition() + written);
+		if (buffer.getPosition() < buffer.getLimit())
 		{
-			uint16_t remaining = buffer.getRemaining();
+			uint32_t remaining = buffer.getRemaining();
 			char tmp[remaining];
 			memcpy(tmp, buffer.getDatas() + buffer.getPosition(), remaining);
 			buffer.clear();
 			buffer.writeBytes(tmp, remaining);
 		}
 		else
-		{
 			buffer.clear();
-		}
 		return (written);
 	}
 
@@ -113,9 +107,9 @@ namespace net
 
 		if (!this->connected)
 			return (-1);
-		if (buffer.getRemaining() > 0)
+		if (buffer.getPosition() < buffer.getLimit())
 		{
-			uint16_t remaining = buffer.getRemaining();
+			uint32_t remaining = buffer.getRemaining();
 			char tmp[remaining];
 			memcpy(tmp, buffer.getDatas() + buffer.getPosition(), remaining);
 			buffer.clear();
