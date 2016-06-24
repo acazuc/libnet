@@ -20,8 +20,7 @@ namespace net
 
 	Socket::~Socket()
 	{
-		if (this->opened)
-			closesocket(sockfd);
+		close();
 	}
 
 	bool Socket::open()
