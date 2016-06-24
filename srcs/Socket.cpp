@@ -72,22 +72,26 @@ namespace net
 		if (!this->connected)
 			return (-1);
 		buffer.flip();
-		if ((written = ::send(sockfd, buffer.getDatas() + buffer.getPosition(), buffer.getRemaining(), 0)) == SOCKET_ERROR)
+		if (buffer.getRemaining() > 0)
 		{
-			#ifdef PLATFORM_WINDOWS
-				int error = WSAGetLastError();
-				if (error != WSAEWOULDBLOCK)
-					return (-1);
-			#elif defined PLATFORM_LINUX
-				if (errno != EWOULDBLOCK && errno != EAGAIN)
-					return (-1);
-			#else
-			# error Platform not supported
-			#endif
+			if ((written = ::send(sockfd, buffer.getDatas() + buffer.getPosition(), buffer.getRemaining(), 0)) == SOCKET_ERROR)
+			{
+				#ifdef PLATFORM_WINDOWS
+					int error = WSAGetLastError();
+					if (error != WSAEWOULDBLOCK)
+						return (-1);
+				#elif defined PLATFORM_LINUX
+					if (errno != EWOULDBLOCK && errno != EAGAIN)
+						return (-1);
+				#else
+				# error Platform not supported
+				#endif
+				return (-2);
+			}
+			buffer.setPosition(buffer.getPosition() + written);
 		}
-		if (written == -1)
-			written = 0;
-		buffer.setPosition(buffer.getPosition() + written);
+		else
+			written = -2;
 		if (buffer.getPosition() < buffer.getLimit())
 		{
 			uint32_t remaining = buffer.getRemaining();
@@ -119,28 +123,27 @@ namespace net
 		{
 			buffer.clear();
 		}
-		if ((readed = ::recv(sockfd, buffer.getDatas() + buffer.getPosition(), buffer.getRemaining(), 0)) == SOCKET_ERROR)
+		if (buffer.getRemaining() > 0)
 		{
-			#ifdef PLATFORM_WINDOWS
-				int error = WSAGetLastError();
-				if (error != WSAEWOULDBLOCK)
-				{
-					buffer.flip();
-					return (-1);
-				}
-			#elif defined PLATFORM_LINUX
-				if (errno != EWOULDBLOCK && errno != EAGAIN)
-				{
-					buffer.flip();
-					return (-1);
-				}
-			#else
-			# error Platform not supported
-			#endif
+			if ((readed = ::recv(sockfd, buffer.getDatas() + buffer.getPosition(), buffer.getRemaining(), 0)) == SOCKET_ERROR)
+			{
+				buffer.flip();
+				#ifdef PLATFORM_WINDOWS
+					int error = WSAGetLastError();
+					if (error != WSAEWOULDBLOCK)
+						return (-1);
+				#elif defined PLATFORM_LINUX
+					if (errno != EWOULDBLOCK && errno != EAGAIN)
+						return (-1);
+				#else
+				# error Platform not supported
+				#endif
+				return (-2);
+			}
+			buffer.setPosition(buffer.getPosition() + readed);
 		}
-		if (readed == -1)
-			readed = 0;
-		buffer.setPosition(buffer.getPosition() + readed);
+		else
+			readed = -2;
 		buffer.flip();
 		return (readed);
 	}
