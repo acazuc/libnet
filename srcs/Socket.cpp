@@ -58,8 +58,18 @@ namespace net
 		serv_addr.sin_family = AF_INET;
 		memcpy(&serv_addr.sin_addr.s_addr, server->h_addr, server->h_length);
 		serv_addr.sin_port = htons(port);
-		if (::connect(this->sockfd, (struct sockaddr*)&serv_addr, sizeof(serv_addr)) == SOCKET_ERROR && errno != EINPROGRESS)
-			return (false);
+		if (::connect(this->sockfd, (struct sockaddr*)&serv_addr, sizeof(serv_addr)) == SOCKET_ERROR)
+		{
+			#ifdef PLATFORM_WINDOWS
+				if (WSAGetLastError() != WSAEINPROGRESS)
+					return (false);
+			#elif defined PLATFORM_LINUX
+				if (errno != EINPROGRESS)
+					return (false);
+			#else
+			# error Platform not supported
+			#endif
+		}
 		this->connected = true;
 		return (true);
 	}
@@ -76,8 +86,7 @@ namespace net
 			if ((written = ::send(sockfd, buffer.getDatas() + buffer.getPosition(), buffer.getRemaining(), 0)) == SOCKET_ERROR)
 			{
 				#ifdef PLATFORM_WINDOWS
-					int error = WSAGetLastError();
-					if (error != WSAEWOULDBLOCK)
+					if (WSAGetLastError() != WSAEWOULDBLOCK)
 						return (-1);
 				#elif defined PLATFORM_LINUX
 					if (errno != EWOULDBLOCK && errno != EAGAIN)

@@ -1,10 +1,6 @@
 NAME = libnet.a
 
-CC_LINUX = g++ -std=c++14
-
-CC_WINDOWS = x86_64-w64-mingw32-g++ -std=c++14
-
-CC = $(CC_LINUX)
+CC = g++ -std=c++14
 
 CLFAGS = -Wall -Wextra -Werror -Ofast
 
