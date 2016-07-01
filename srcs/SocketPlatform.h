@@ -1,4 +1,8 @@
-#include "Platform.h"
+#ifndef SOCKET_PLATFORM_H
+# define SOCKET_PLATFORM_H
+
+# include "Platform.h"
+
 # ifdef PLATFORM_WINDOWS
 #  include <winsock2.h>
 #  include <ws2tcpip.h>
@@ -18,3 +22,5 @@
 # else
 #  error Unsupported platform
 # endif
+
+#endif
