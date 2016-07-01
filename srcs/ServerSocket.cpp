@@ -10,6 +10,12 @@ namespace net
 		this->opened = false;
 	}
 
+	bool ServerSocket::~ServerSocket()
+	{
+		if (this->opened)
+			closesocket(sockfd);
+	}
+
 	bool ServerSocket::open()
 	{
 		if (this->opened)

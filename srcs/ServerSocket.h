@@ -19,6 +19,7 @@ namespace net
 
 		public:
 			ServerSocket();
+			~ServerSocket();
 			bool open();
 			bool bind(uint16_t port);
 			bool setBlocking(bool blocking);
