@@ -10,7 +10,7 @@ namespace net
 		this->opened = false;
 	}
 
-	bool ServerSocket::~ServerSocket()
+	ServerSocket::~ServerSocket()
 	{
 		if (this->opened)
 			closesocket(sockfd);
