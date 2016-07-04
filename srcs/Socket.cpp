@@ -61,7 +61,7 @@ namespace net
 		if (::connect(this->sockfd, (struct sockaddr*)&serv_addr, sizeof(serv_addr)) == SOCKET_ERROR)
 		{
 			#ifdef PLATFORM_WINDOWS
-				if (WSAGetLastError() != WSAEINPROGRESS)
+				if (WSAGetLastError() != WSAEWOULDBLOCK)
 					return (false);
 			#elif defined PLATFORM_LINUX
 				if (errno != EINPROGRESS)
