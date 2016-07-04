@@ -1,12 +1,10 @@
 NAME = libnet.a
 
-CC = x86_64-w64-mingw32-g++ -std=c++14
-
-AR = x86_64-w64-mingw32-ar
+CC = g++ -std=c++14
 
 CLFAGS = -Wall -Wextra -Werror -Ofast
 
-INCLUDES_PATH = -Isrcs
+INCLUDES_PATH = -I srcs
 
 SRCS_PATH = srcs/
 
@@ -22,8 +20,6 @@ OBJS_PATH = objs/
 OBJS_NAME = $(SRCS_NAME:.cpp=.opp)
 
 OBJS = $(addprefix $(OBJS_PATH), $(OBJS_NAME))
-
-LIBRARY = -lmysqlcppconn
 
 all: $(NAME)
 
