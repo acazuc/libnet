@@ -50,6 +50,7 @@ namespace net
 			inline void writeString(std::string &value) {this->wBuffer.writeString(value);};
 			inline std::string readString() {return (this->rBuffer.readString());};
 			inline void setBlocking(bool blocking) {this->socket.setBlocking(blocking);};
+			inline Socket &getSocket() {return (this->socket);};
 			inline Buffer &getRBuffer() {return (this->rBuffer);};
 			inline Buffer &getWBuffer() {return (this->wBuffer);};
 

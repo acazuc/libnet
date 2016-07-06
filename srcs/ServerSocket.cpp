@@ -68,7 +68,7 @@ namespace net
 		if (!this->bound)
 			return (NULL);
 		cli_len = sizeof(cli_addr);
-		if ((newsockfd = ::accept(sockfd, (struct sockaddr *) &cli_addr, &cli_len)) == -1)
+		if ((newsockfd = ::accept(sockfd, (struct sockaddr*)&cli_addr, &cli_len)) == -1)
 			return (NULL);
 		return (new Socket(newsockfd));
 	}
