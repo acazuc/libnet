@@ -81,6 +81,8 @@ namespace net
 		if (!this->connected)
 			return (-1);
 		buffer.flip();
+		if (crypt)
+			buffer.crypt();
 		if (buffer.getRemaining() > 0)
 		{
 			if ((written = ::send(sockfd, buffer.getDatas() + buffer.getPosition(), buffer.getRemaining(), 0)) == SOCKET_ERROR)
@@ -110,6 +112,8 @@ namespace net
 		}
 		else
 			buffer.clear();
+		if (crypt)
+			buffer.crypt();
 		return (written);
 	}
 
@@ -119,6 +123,8 @@ namespace net
 
 		if (!this->connected)
 			return (-1);
+		if (crypt)
+			buffer.crypt();
 		if (buffer.getPosition() < buffer.getLimit())
 		{
 			uint32_t remaining = buffer.getRemaining();
@@ -153,6 +159,8 @@ namespace net
 		else
 			readed = -2;
 		buffer.flip();
+		if (crypt)
+			buffer.crypt();
 		return (readed);
 	}
 

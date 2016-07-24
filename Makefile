@@ -2,7 +2,7 @@ NAME = libnet.a
 
 CC = g++ -std=c++14
 
-CLFAGS = -Wall -Wextra -Werror -Ofast
+CLFAGS = -Wall -Wextra -Werror -Ofast -pipe -march=x86-64 -mtune=generic -flto=8
 
 INCLUDES_PATH = -I srcs
 
@@ -11,7 +11,7 @@ SRCS_PATH = srcs/
 SRCS_NAME = Buffer.cpp \
 			ServerSocket.cpp \
 			Socket.cpp \
-			Connection.cpp
+			Connection.cpp \
 
 SRCS = $(addprefix $(SRCS_PATH), $(SRCS_NAME))
 

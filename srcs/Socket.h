@@ -14,6 +14,7 @@ namespace net
 		private:
 			bool connected;
 			bool opened;
+			bool crypt;
 			SOCKET sockfd;
 
 		public:
@@ -27,6 +28,7 @@ namespace net
 			int32_t read(Buffer &buffer);
 			bool setBlocking(bool blocking);
 			SOCKET getSockfd() {return (this->sockfd);};
+			inline void setCrypt(bool crypt) {this->crypt = crypt;};
 
 	};
 

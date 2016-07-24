@@ -25,6 +25,7 @@ namespace net
 		public:
 			Buffer();
 			~Buffer();
+			void crypt();
 			void writeBytes(void *src, size_t len);
 			void writeBool(bool value);
 			void writeInt8(int8_t value);
