@@ -129,7 +129,7 @@ namespace net
 		}
 	}
 
-	void Buffer::crypt()
+	void Buffer::crypt(uint32_t position, uint32_t length)
 	{
 		uint8_t keyBox[257];
 		uint8_t tmp;
@@ -137,10 +137,9 @@ namespace net
 		uint64_t j;
 		uint64_t k;
 
-		if (keylen == 0)
-			return;
 		for (i = 0; i < 256; ++i)
 			keyBox[i] = (uint8_t)i;
+		j = 0;
 		for (i = 0; i < 256; ++i)
 		{
 			j = (j + static_cast<uint64_t>(keyBox[i]) + key[i % keylen]) % 256;
@@ -150,7 +149,7 @@ namespace net
 		}
 		i = 0;
 		j = 0;
-		for (uint64_t x = 0; x < this->limit; x++)
+		for (uint32_t x = 0; x < length; ++x)
 		{
 			i = (i + 1U) % 256;
 			j = (j + static_cast<uint64_t>(keyBox[i])) % 256;
@@ -158,10 +157,14 @@ namespace net
 			keyBox[i] = keyBox[j];
 			keyBox[j] = tmp;
 			k = (static_cast<uint64_t>(keyBox[i]) + static_cast<uint64_t>(keyBox[j])) % 256;
-			this->datas[x] = this->datas[x] ^ keyBox[k];
+			this->datas[position + x] = this->datas[position + x] ^ keyBox[k];
 		}
 	}
 
+	void Buffer::crypt()
+	{
+		crypt(0, this->limit);
+	}
 
 	void Buffer::writeBytes(void *src, size_t len)
 	{

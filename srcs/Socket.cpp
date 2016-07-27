@@ -10,6 +10,7 @@ namespace net
 		this->connected = true;
 		this->sockfd = sock;
 		this->opened = true;
+		this->crypt = false;
 	}
 
 	Socket::Socket()
@@ -81,12 +82,14 @@ namespace net
 		if (!this->connected)
 			return (-1);
 		buffer.flip();
-		if (crypt)
-			buffer.crypt();
 		if (buffer.getRemaining() > 0)
 		{
+			if (this->crypt)
+				buffer.crypt(buffer.getPosition(), buffer.getRemaining());
 			if ((written = ::send(sockfd, buffer.getDatas() + buffer.getPosition(), buffer.getRemaining(), 0)) == SOCKET_ERROR)
 			{
+				if (this->crypt)
+					buffer.crypt(buffer.getPosition(), buffer.getRemaining());
 				#ifdef PLATFORM_WINDOWS
 					if (WSAGetLastError() != WSAEWOULDBLOCK)
 						return (-1);
@@ -98,6 +101,8 @@ namespace net
 				#endif
 				return (-2);
 			}
+			if (this->crypt)
+				buffer.crypt(buffer.getPosition(), buffer.getRemaining());
 			buffer.setPosition(buffer.getPosition() + written);
 		}
 		else
@@ -112,8 +117,6 @@ namespace net
 		}
 		else
 			buffer.clear();
-		if (crypt)
-			buffer.crypt();
 		return (written);
 	}
 
@@ -123,8 +126,6 @@ namespace net
 
 		if (!this->connected)
 			return (-1);
-		if (crypt)
-			buffer.crypt();
 		if (buffer.getPosition() < buffer.getLimit())
 		{
 			uint32_t remaining = buffer.getRemaining();
@@ -143,8 +144,7 @@ namespace net
 			{
 				buffer.flip();
 				#ifdef PLATFORM_WINDOWS
-					int error = WSAGetLastError();
-					if (error != WSAEWOULDBLOCK)
+					if (WSAGetLastError() != WSAEWOULDBLOCK)
 						return (-1);
 				#elif defined PLATFORM_LINUX
 					if (errno != EWOULDBLOCK && errno != EAGAIN)
@@ -154,13 +154,13 @@ namespace net
 				#endif
 				return (-2);
 			}
+			if (this->crypt)
+				buffer.crypt(buffer.getPosition(), readed);
 			buffer.setPosition(buffer.getPosition() + readed);
 		}
 		else
 			readed = -2;
 		buffer.flip();
-		if (crypt)
-			buffer.crypt();
 		return (readed);
 	}
 
