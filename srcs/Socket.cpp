@@ -176,7 +176,7 @@ namespace net
 			if (flags < 0)
 				return (false);
 			flags = blocking ? (flags & ~O_NONBLOCK) : (flags | O_NONBLOCK);
-			return ((fcntl(sockfd, F_SETFL, flags) == 0) ? true : false);
+			return (fcntl(sockfd, F_SETFL, flags) == 0);
 		#else
 			#error Not supported platform
 		#endif
