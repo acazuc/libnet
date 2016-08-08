@@ -12,6 +12,7 @@ namespace net
 	{
 
 		private:
+			bool waitingConnection;
 			bool connected;
 			bool opened;
 			bool crypt;
@@ -24,6 +25,7 @@ namespace net
 			bool open();
 			bool close();
 			bool connect(std::string host, uint16_t port);
+			int getConnectionStatus();
 			int32_t send(Buffer &buffer);
 			int32_t read(Buffer &buffer);
 			bool setBlocking(bool blocking);

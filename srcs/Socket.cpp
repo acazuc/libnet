@@ -7,6 +7,7 @@ namespace net
 
 	Socket::Socket(SOCKET sock)
 	{
+		this->waitingConnection = false;
 		this->connected = true;
 		this->sockfd = sock;
 		this->opened = true;
@@ -15,6 +16,7 @@ namespace net
 
 	Socket::Socket()
 	{
+		this->waitingConnection = false;
 		this->connected = false;
 		this->opened = false;
 	}
@@ -41,6 +43,7 @@ namespace net
 			closesocket(sockfd);
 			this->opened = false;
 			this->connected = false;
+			this->waitingConnection = false;
 			return (true);
 		}
 		return (false);
@@ -70,9 +73,45 @@ namespace net
 			#else
 			# error Platform not supported
 			#endif
+			this->waitingConnection = true;
 		}
-		this->connected = true;
+		else
+			this->connected = true;
 		return (true);
+	}
+
+	int Socket::getConnectionStatus()
+	{
+		struct timeval tv;
+		fd_set fdset;
+		int ret;
+
+		tv.tv_sec = 0;
+		tv.tv_usec = 1000;
+		FD_ZERO(&fdset);
+		FD_SET(this->sockfd, &fdset);
+		if ((ret = select(this->sockfd + 1, NULL, &fdset, NULL, &tv)))
+		{
+			this->waitingConnection = false;
+			if (ret == SOCKET_ERROR)
+				return (-1);
+			char err;
+			socklen_t len = sizeof(err);
+			if (getsockopt(this->sockfd, SOL_SOCKET, SO_ERROR, &err, &len) == SOCKET_ERROR)
+				return (-1);
+			#ifdef PLATFORM_WINDOWS
+				if (err && WSAGetLastError() != WSAEINPROGRESS)
+					return (-1);
+			#elif defined PLATFORM_LINUX
+				if (err && err != EINPROGRESS)
+					return (-1);
+			#else
+				#error Unsupported platform
+			#endif
+			this->connected = true;
+			return (1);
+		}
+		return (0);
 	}
 
 	int32_t Socket::send(Buffer &buffer)
