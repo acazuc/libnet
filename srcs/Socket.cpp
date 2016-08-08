@@ -82,6 +82,10 @@ namespace net
 
 	int Socket::getConnectionStatus()
 	{
+		if (this->connected)
+			return (1);
+		if (!this->waitingConnection)
+			return (-1);
 		struct timeval tv;
 		fd_set fdset;
 		int ret;
