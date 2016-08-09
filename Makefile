@@ -32,6 +32,9 @@ $(OBJS_PATH)%.opp: $(SRCS_PATH)%.cpp
 	@echo " - Compiling $<"
 	@$(CC) $(CFLAGS) -o $@ -c $< $(INCLUDE_PATH)
 
+odir:
+	@mkdir -p $(OBJS_PATH)
+
 clean:
 	@echo " - Cleaning objs"
 	@rm -f $(OBJS)
