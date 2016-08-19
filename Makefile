@@ -4,9 +4,9 @@ CC = g++ -std=c++14
 
 CLFAGS = -Wall -Wextra -Werror -Ofast -pipe -march=x86-64 -mtune=generic -flto=8
 
-INCLUDES_PATH = -I srcs
+INCLUDES_PATH = -I src
 
-SRCS_PATH = srcs/
+SRCS_PATH = src/
 
 SRCS_NAME = Buffer.cpp \
 			ServerSocket.cpp \
@@ -15,7 +15,7 @@ SRCS_NAME = Buffer.cpp \
 
 SRCS = $(addprefix $(SRCS_PATH), $(SRCS_NAME))
 
-OBJS_PATH = objs/
+OBJS_PATH = obj/
 
 OBJS_NAME = $(SRCS_NAME:.cpp=.opp)
 
