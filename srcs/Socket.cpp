@@ -1,8 +1,7 @@
 #include "Socket.h"
 #include <cstring>
-#include <iostream>
 
-namespace net
+namespace libnet
 {
 
 	Socket::Socket(SOCKET sock)

@@ -1,10 +1,10 @@
-#ifndef NET_BUFFER_H
-# define NET_BUFFER_H
+#ifndef LIBNET_BUFFER_H
+# define LIBNET_BUFFER_H
 
 # include <cstdint>
 # include <string>
 
-namespace net
+namespace libnet
 {
 
 	class Buffer

@@ -1,11 +1,11 @@
-#ifndef NET_SERVER_SOCKET_H
-# define NET_SERVER_SOCKET_H
+#ifndef LIBNET_SERVER_SOCKET_H
+# define LIBNET_SERVER_SOCKET_H
 
 # include "SocketPlatform.h"
 # include "Socket.h"
 # include <cstdint>
 
-namespace net
+namespace libnet
 {
 
 	class ServerSocket

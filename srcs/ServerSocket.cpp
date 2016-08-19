@@ -1,7 +1,7 @@
 #include "ServerSocket.h"
 #include <cstring>
 
-namespace net
+namespace libnet
 {
 
 	ServerSocket::ServerSocket()

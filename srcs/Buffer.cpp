@@ -23,7 +23,7 @@ static uint8_t key[] = {165, 61, 151, 185, 74, 69, 202, 40, 128, 22, 150, 71, 21
 				, 16, 80, 133, 141, 107, 11, 229, 57, 77, 164, 95, 75, 147, 177, 124};
 static uint8_t keylen = 255;
 
-namespace net
+namespace libnet
 {
 
 	Buffer::Buffer()

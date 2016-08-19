@@ -1,11 +1,11 @@
-#ifndef NET_SOCKET_H
-# define NET_SOCKET_H
+#ifndef LIBNET_SOCKET_H
+# define LIBNET_SOCKET_H
 
 # include "SocketPlatform.h"
 # include "Buffer.h"
 # include <string>
 
-namespace net
+namespace libnet
 {
 
 	class Socket

@@ -1,12 +1,12 @@
-#ifndef NET_CONNECTION_H
-# define NET_CONNECTION_H
+#ifndef LIBNET_CONNECTION_H
+# define LIBNET_CONNECTION_H
 
 # include "Buffer.h"
 # include "Socket.h"
 # include <cstdint>
 # include <string>
 
-namespace net
+namespace libnet
 {
 
 	class Connection

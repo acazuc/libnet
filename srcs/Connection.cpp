@@ -1,7 +1,7 @@
 #include "Connection.h"
 #include <iostream>
 
-namespace net
+namespace libnet
 {
 
 	Connection::Connection(Socket &sock)
