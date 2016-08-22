@@ -1,6 +1,10 @@
 #include "Socket.h"
 #include <cstring>
 
+#ifndef MSG_NOSIGNAL
+# define MSG_NOSIGNAL 0
+#endif
+
 namespace libnet
 {
 
@@ -128,7 +132,7 @@ namespace libnet
 		{
 			if (this->crypt)
 				buffer.crypt(buffer.getPosition(), buffer.getRemaining());
-			if ((written = ::send(sockfd, buffer.getDatas() + buffer.getPosition(), buffer.getRemaining(), 0)) == SOCKET_ERROR)
+			if ((written = ::send(sockfd, buffer.getDatas() + buffer.getPosition(), buffer.getRemaining(), MSG_NOSIGNAL)) == SOCKET_ERROR)
 			{
 				if (this->crypt)
 					buffer.crypt(buffer.getPosition(), buffer.getRemaining());
@@ -171,15 +175,14 @@ namespace libnet
 		if (buffer.getPosition() < buffer.getLimit())
 		{
 			uint32_t remaining = buffer.getRemaining();
-			char tmp[remaining];
+			char *tmp = new char[remaining];
 			memcpy(tmp, buffer.getDatas() + buffer.getPosition(), remaining);
 			buffer.clear();
 			buffer.writeBytes(tmp, remaining);
+			delete[] (tmp);
 		}
 		else
-		{
 			buffer.clear();
-		}
 		if (buffer.getRemaining() > 0)
 		{
 			if ((readed = ::recv(sockfd, buffer.getDatas() + buffer.getPosition(), buffer.getRemaining(), 0)) == SOCKET_ERROR)
