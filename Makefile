@@ -2,6 +2,10 @@ NAME = libnet.a
 
 CC = g++ -std=c++14
 
+AR = ar
+
+RANLIB = ranlib
+
 CLFAGS = -Wall -Wextra -Werror -Ofast -pipe -march=x86-64 -mtune=generic -flto=8
 
 INCLUDES_PATH = -I src
@@ -25,8 +29,8 @@ all: $(NAME)
 
 $(NAME): $(OBJS)
 	@echo " - Making $(NAME)"
-	@ar -rc $(NAME) $(OBJS)
-	@ranlib $(NAME)
+	@$(AR) -rc $(NAME) $(OBJS)
+	@$(RANLIB) $(NAME)
 
 $(OBJS_PATH)%.opp: $(SRCS_PATH)%.cpp
 	@echo " - Compiling $<"
