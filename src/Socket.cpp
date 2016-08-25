@@ -1,10 +1,6 @@
 #include "Socket.h"
 #include <cstring>
 
-#ifndef MSG_NOSIGNAL
-# define MSG_NOSIGNAL 0
-#endif
-
 namespace libnet
 {
 
@@ -132,7 +128,7 @@ namespace libnet
 		{
 			if (this->crypt)
 				buffer.crypt(buffer.getPosition(), buffer.getRemaining());
-			if ((written = ::send(sockfd, buffer.getDatas() + buffer.getPosition(), buffer.getRemaining(), MSG_NOSIGNAL)) == SOCKET_ERROR)
+			if ((written = ::send(sockfd, buffer.getDatas() + buffer.getPosition(), buffer.getRemaining(), 0)) == SOCKET_ERROR)
 			{
 				if (this->crypt)
 					buffer.crypt(buffer.getPosition(), buffer.getRemaining());
@@ -195,7 +191,7 @@ namespace libnet
 					if (errno != EWOULDBLOCK && errno != EAGAIN)
 						return (-1);
 				#else
-				# error Platform not supported
+					#error Platform not supported
 				#endif
 				return (-2);
 			}

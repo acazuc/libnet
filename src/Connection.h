@@ -23,7 +23,6 @@ namespace libnet
 			~Connection();
 			void startPacket();
 			void endPacket();
-			inline void close() {socket.close();rBuffer.clear();wBuffer.clear();};
 			inline int32_t read() {return (this->socket.read(rBuffer));};
 			inline int32_t send() {return (this->socket.send(wBuffer));};
 			inline void writeBool(bool value) {this->wBuffer.writeBool(value);};
