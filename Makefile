@@ -10,7 +10,7 @@ RANLIB = ranlib
 
 CLFAGS = -Wall -Wextra -Werror -Ofast -pipe -march=x86-64 -mtune=generic -flto=8
 
-INCLUDES_PATH = -I src
+INCLUDES_PATH = -I src -I lib
 
 SRCS_PATH = src/
 

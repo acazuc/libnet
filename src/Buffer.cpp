@@ -2,6 +2,7 @@
 #include "SocketPlatform.h"
 #include <stdexcept>
 #include <iostream>
+#include <utf8.h>
 
 #define BUFF_SIZE 16384
 
@@ -374,6 +375,12 @@ namespace libnet
 		length = readUInt16();
 		while (--length >= 0)
 			str += readChar();
+		if (!utf8::is_valid(str.begin(), str.end()))
+		{
+			std::string tmp;
+			utf8::replace_invalid(str.begin(), str.end(), back_inserter(tmp));
+			str = tmp;
+		}
 		return (str);
 	}
 
