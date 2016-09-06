@@ -22,8 +22,9 @@ namespace libnet
 			~ServerSocket();
 			bool open();
 			bool bind(uint16_t port);
-			bool setBlocking(bool blocking);
 			Socket *accept();
+			bool setNagle(bool active);
+			bool setBlocking(bool blocking);
 
 	};
 

@@ -41,6 +41,26 @@ namespace libnet
 		return (true);
 	}
 
+	Socket *ServerSocket::accept()
+	{
+		struct sockaddr cli_addr;
+		SOCKLEN_T cli_len;
+		SOCKET newsockfd;
+
+		if (!this->bound)
+			return (NULL);
+		cli_len = sizeof(cli_addr);
+		if ((newsockfd = ::accept(this->sockfd, (struct sockaddr*)&cli_addr, &cli_len)) == -1)
+			return (NULL);
+		return (new Socket(newsockfd));
+	}
+
+	bool Socket::setNagle(bool active)
+	{
+		int flag = active ? 1 : 0;
+		return (setsockopt(this->sockfd, IPPROTO_TCP, TCP_NODELAY, (char*)&flag, sizeof(int)) == SOCKET_ERROR);
+	}
+
 	bool ServerSocket::setBlocking(bool blocking)
 	{
 		#ifdef PLATFORM_WINDOWS
@@ -57,20 +77,6 @@ namespace libnet
 		#else
 			#error Not supported platform
 		#endif
-	}
-
-	Socket *ServerSocket::accept()
-	{
-		struct sockaddr cli_addr;
-		SOCKLEN_T cli_len;
-		SOCKET newsockfd;
-
-		if (!this->bound)
-			return (NULL);
-		cli_len = sizeof(cli_addr);
-		if ((newsockfd = ::accept(sockfd, (struct sockaddr*)&cli_addr, &cli_len)) == -1)
-			return (NULL);
-		return (new Socket(newsockfd));
 	}
 
 }

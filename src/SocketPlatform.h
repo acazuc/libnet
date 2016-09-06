@@ -8,6 +8,8 @@
 #  include <ws2tcpip.h>
    typedef int SOCKLEN_T;
 # elif defined PLATFORM_LINUX
+#  include <netinet/tcp.h>
+#  include <sys/types.h>
 #  include <sys/socket.h>
 #  include <netinet/in.h>
 #  include <unistd.h>

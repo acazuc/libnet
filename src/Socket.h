@@ -28,6 +28,7 @@ namespace libnet
 			int getConnectionStatus();
 			int32_t send(Buffer &buffer);
 			int32_t read(Buffer &buffer);
+			bool setNagle(bool active);
 			bool setBlocking(bool blocking);
 			SOCKET getSockfd() {return (this->sockfd);};
 			inline void setCrypt(bool crypt) {this->crypt = crypt;};

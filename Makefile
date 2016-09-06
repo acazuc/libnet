@@ -2,6 +2,8 @@ NAME = libnet.a
 
 CC = g++ -std=c++14
 
+ARCH = -m64
+
 AR = ar
 
 RANLIB = ranlib
@@ -34,7 +36,7 @@ $(NAME): $(OBJS)
 
 $(OBJS_PATH)%.opp: $(SRCS_PATH)%.cpp
 	@echo " - Compiling $<"
-	@$(CC) $(CFLAGS) -o $@ -c $< $(INCLUDES_PATH)
+	@$(CC) $(ARCH) $(CFLAGS) -o $@ -c $< $(INCLUDES_PATH)
 
 odir:
 	@mkdir -p $(OBJS_PATH)

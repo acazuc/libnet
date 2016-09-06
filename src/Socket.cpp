@@ -70,7 +70,7 @@ namespace libnet
 				if (errno != EINPROGRESS)
 					return (false);
 			#else
-			# error Platform not supported
+				#error Platform not supported
 			#endif
 			this->waitingConnection = true;
 		}
@@ -128,7 +128,7 @@ namespace libnet
 		{
 			if (this->crypt)
 				buffer.crypt(buffer.getPosition(), buffer.getRemaining());
-			if ((written = ::send(sockfd, buffer.getDatas() + buffer.getPosition(), buffer.getRemaining(), 0)) == SOCKET_ERROR)
+			if ((written = ::send(this->sockfd, buffer.getDatas() + buffer.getPosition(), buffer.getRemaining(), 0)) == SOCKET_ERROR)
 			{
 				if (this->crypt)
 					buffer.crypt(buffer.getPosition(), buffer.getRemaining());
@@ -139,7 +139,7 @@ namespace libnet
 					if (errno != EWOULDBLOCK && errno != EAGAIN)
 						return (-1);
 				#else
-				# error Platform not supported
+					#error Platform not supported
 				#endif
 				return (-2);
 			}
@@ -181,7 +181,7 @@ namespace libnet
 			buffer.clear();
 		if (buffer.getRemaining() > 0)
 		{
-			if ((readed = ::recv(sockfd, buffer.getDatas() + buffer.getPosition(), buffer.getRemaining(), 0)) == SOCKET_ERROR)
+			if ((readed = ::recv(this->sockfd, buffer.getDatas() + buffer.getPosition(), buffer.getRemaining(), 0)) == SOCKET_ERROR)
 			{
 				buffer.flip();
 				#ifdef PLATFORM_WINDOWS
@@ -205,6 +205,12 @@ namespace libnet
 		return (readed);
 	}
 
+	bool Socket::setNagle(bool active)
+	{
+		int flag = active ? 1 : 0;
+		return (setsockopt(this->sockfd, IPPROTO_TCP, TCP_NODELAY, (char*)&flag, sizeof(int)) == SOCKET_ERROR);
+	}
+
 	bool Socket::setBlocking(bool blocking)
 	{
 		#ifdef PLATFORM_WINDOWS
@@ -217,9 +223,9 @@ namespace libnet
 			if (flags < 0)
 				return (false);
 			flags = blocking ? (flags & ~O_NONBLOCK) : (flags | O_NONBLOCK);
-			return (fcntl(sockfd, F_SETFL, flags) == 0);
+			return (fcntl(this->sockfd, F_SETFL, flags) == 0);
 		#else
-			#error Not supported platform
+			#error Platform not supported
 		#endif
 	}
 
