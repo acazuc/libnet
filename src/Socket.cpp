@@ -4,11 +4,12 @@
 namespace libnet
 {
 
-	Socket::Socket(SOCKET sock)
+	Socket::Socket(SOCKET sockfd, SOCKADDR_IN cli_addr)
+	: cli_addr(cli_addr)
+	, sockfd(sockfd)
 	{
 		this->waitingConnection = false;
 		this->connected = true;
-		this->sockfd = sock;
 		this->opened = true;
 		this->crypt = false;
 	}
@@ -18,6 +19,7 @@ namespace libnet
 		this->waitingConnection = false;
 		this->connected = false;
 		this->opened = false;
+		this->crypt = false;
 	}
 
 	Socket::~Socket()

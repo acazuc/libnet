@@ -12,14 +12,15 @@ namespace libnet
 	{
 
 		private:
+			SOCKADDR_IN cli_addr;
+			SOCKET sockfd;
 			bool waitingConnection;
 			bool connected;
 			bool opened;
 			bool crypt;
-			SOCKET sockfd;
 
 		public:
-			Socket(SOCKET sock);
+			Socket(SOCKET sockfd, SOCKADDR_IN cli_addr);
 			Socket();
 			~Socket();
 			bool open();
@@ -32,6 +33,7 @@ namespace libnet
 			bool setBlocking(bool blocking);
 			SOCKET getSockfd() {return (this->sockfd);};
 			inline void setCrypt(bool crypt) {this->crypt = crypt;};
+			inline uint32_t getIp() {return (this->cli_addr.sin_addr.s_addr);};
 
 	};
 

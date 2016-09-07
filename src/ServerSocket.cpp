@@ -43,16 +43,16 @@ namespace libnet
 
 	Socket *ServerSocket::accept()
 	{
-		struct sockaddr cli_addr;
+		SOCKADDR_IN cli_addr;
 		SOCKLEN_T cli_len;
 		SOCKET newsockfd;
 
 		if (!this->bound)
 			return (NULL);
 		cli_len = sizeof(cli_addr);
-		if ((newsockfd = ::accept(this->sockfd, (struct sockaddr*)&cli_addr, &cli_len)) == -1)
+		if ((newsockfd = ::accept(this->sockfd, (struct sockaddr*)&cli_addr, &cli_len)) == INVALID_SOCKET)
 			return (NULL);
-		return (new Socket(newsockfd));
+		return (new Socket(newsockfd, cli_addr));
 	}
 
 	bool ServerSocket::setNagle(bool active)
