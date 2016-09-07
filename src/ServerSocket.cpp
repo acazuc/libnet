@@ -55,7 +55,7 @@ namespace libnet
 		return (new Socket(newsockfd));
 	}
 
-	bool Socket::setNagle(bool active)
+	bool ServerSocket::setNagle(bool active)
 	{
 		int flag = active ? 1 : 0;
 		return (setsockopt(this->sockfd, IPPROTO_TCP, TCP_NODELAY, (char*)&flag, sizeof(int)) == SOCKET_ERROR);
