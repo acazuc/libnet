@@ -1,5 +1,6 @@
 #include "Socket.h"
 #include <cstring>
+#include <iostream>
 
 namespace libnet
 {
@@ -59,9 +60,9 @@ namespace libnet
 			return (false);
 		if (!(server = gethostbyname(host.c_str())))
 			return (false);
-		memset(&serv_addr, 0, sizeof(serv_addr));
+		std::memset(&serv_addr, 0, sizeof(serv_addr));
 		serv_addr.sin_family = AF_INET;
-		memcpy(&serv_addr.sin_addr.s_addr, server->h_addr, server->h_length);
+		std::memcpy(&serv_addr.sin_addr.s_addr, server->h_addr, server->h_length);
 		serv_addr.sin_port = htons(port);
 		if (::connect(this->sockfd, (struct sockaddr*)&serv_addr, sizeof(serv_addr)) == SOCKET_ERROR)
 		{
@@ -95,17 +96,17 @@ namespace libnet
 		tv.tv_usec = 1000;
 		FD_ZERO(&fdset);
 		FD_SET(this->sockfd, &fdset);
-		if ((ret = select(this->sockfd + 1, NULL, &fdset, NULL, &tv)))
+		if ((ret = select(this->sockfd + 1, NULL, &fdset, &fdset, &tv)))
 		{
 			this->waitingConnection = false;
 			if (ret == SOCKET_ERROR)
 				return (-1);
-			char err;
+			int err;
 			socklen_t len = sizeof(err);
-			if (getsockopt(this->sockfd, SOL_SOCKET, SO_ERROR, &err, &len) == SOCKET_ERROR)
+			if (getsockopt(this->sockfd, SOL_SOCKET, SO_ERROR, (char*)&err, &len) == SOCKET_ERROR)
 				return (-1);
 			#ifdef PLATFORM_WINDOWS
-				if (err && WSAGetLastError() != WSAEINPROGRESS)
+				if (err && err != WSAEINPROGRESS)
 					return (-1);
 			#elif defined PLATFORM_LINUX
 				if (err && err != EINPROGRESS)
@@ -209,8 +210,8 @@ namespace libnet
 
 	bool Socket::setNagle(bool active)
 	{
-		int flag = active ? 1 : 0;
-		return (setsockopt(this->sockfd, IPPROTO_TCP, TCP_NODELAY, (char*)&flag, sizeof(int)) == SOCKET_ERROR);
+		char flag = active ? 0 : 1;
+		return (setsockopt(this->sockfd, IPPROTO_TCP, TCP_NODELAY, (char*)&flag, sizeof(flag)) == SOCKET_ERROR);
 	}
 
 	bool Socket::setBlocking(bool blocking)

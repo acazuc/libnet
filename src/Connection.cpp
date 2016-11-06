@@ -4,8 +4,8 @@
 namespace libnet
 {
 
-	Connection::Connection(Socket &sock)
-	: socket(sock)
+	Connection::Connection(Socket &socket)
+	: socket(socket)
 	{
 		rBuffer.flip();
 	}
