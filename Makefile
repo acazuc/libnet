@@ -6,9 +6,13 @@ ARCH = -m64
 
 AR = ar
 
+ARFLAGS = 
+
 RANLIB = ranlib
 
-CLFAGS = -Wall -Wextra -Werror -Ofast -pipe -march=x86-64 -mtune=generic -flto=8
+RANLIBFLAGS = 
+
+CLFAGS = -Wall -Wextra -Werror -Ofast -pipe -mtune=generic -flto=8
 
 INCLUDES_PATH = -I src -I lib
 
@@ -31,8 +35,8 @@ all: $(NAME)
 
 $(NAME): $(OBJS)
 	@echo " - Making $(NAME)"
-	@$(AR) -rc $(NAME) $(OBJS)
-	@$(RANLIB) $(NAME)
+	@$(AR) -rc $(ARFLAGS) $(NAME) $(OBJS)
+	@$(RANLIB) $(RANLIBFLAGS) $(NAME)
 
 $(OBJS_PATH)%.opp: $(SRCS_PATH)%.cpp
 	@echo " - Compiling $<"
