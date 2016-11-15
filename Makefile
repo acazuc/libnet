@@ -6,11 +6,11 @@ ARCH = -m64
 
 AR = ar
 
-ARFLAGS = 
+ARFLAGS =
 
 RANLIB = ranlib
 
-RANLIBFLAGS = 
+RANLIBFLAGS =
 
 CLFAGS = -Wall -Wextra -Werror -Ofast -pipe -mtune=generic -flto=8
 
@@ -31,7 +31,7 @@ OBJS_NAME = $(SRCS_NAME:.cpp=.opp)
 
 OBJS = $(addprefix $(OBJS_PATH), $(OBJS_NAME))
 
-all: $(NAME)
+all: odir $(NAME)
 
 $(NAME): $(OBJS)
 	@echo " - Making $(NAME)"
