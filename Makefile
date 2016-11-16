@@ -12,16 +12,17 @@ RANLIB = ranlib
 
 RANLIBFLAGS =
 
-CLFAGS = -Wall -Wextra -Werror -Ofast -pipe -mtune=generic -flto=8
+CLFAGS = -g -Wall -Wextra -Werror -Ofast -pipe -mtune=generic -funroll-loops -flto=8
 
-INCLUDES_PATH = -I src -I lib
+INCLUDES_PATH = -I src
+INCLUDES_PATH+= -I lib
 
 SRCS_PATH = src/
 
 SRCS_NAME = Buffer.cpp \
-			ServerSocket.cpp \
-			Socket.cpp \
-			Connection.cpp \
+		ServerSocket.cpp \
+		Socket.cpp \
+		Connection.cpp \
 
 SRCS = $(addprefix $(SRCS_PATH), $(SRCS_NAME))
 
