@@ -170,7 +170,7 @@ namespace libnet
 	void Buffer::writeBytes(void *src, size_t len)
 	{
 		if (this->position + len > this->limit)
-			throw std::out_of_range("Buffer overflow");
+			throw std::out_of_range("Buffer overflow (position = " + std::to_string(this->position) + ", limit = " + std::to_string(this->limit) + ")");
 		for (size_t i = 0; i < len; i++)
 		{
 			this->datas[this->position] = ((char*)src)[i];
@@ -248,21 +248,17 @@ namespace libnet
 
 	void Buffer::writeString(std::string &value)
 	{
-		int i;
-
 		writeUInt16(value.length());
-		i = 0;
-		while (i < value.length())
+		for (uint16_t i = 0; i < value.length(); ++i)
 		{
 			writeChar(value[i]);
-			i++;
 		}
 	}
 
 	void Buffer::readBytes(void *dst, size_t len)
 	{
 		if (this->position + len > this->limit)
-			throw std::out_of_range("Buffer underflow");
+			throw std::out_of_range("Buffer underflow (position = " + std::to_string(this->position) + ", limit = " + std::to_string(this->limit) + ")");
 		for (size_t i = 0; i < len; i++)
 		{
 			((char*)dst)[i] = this->datas[this->position];

@@ -137,10 +137,16 @@ namespace libnet
 					buffer.crypt(buffer.getPosition(), buffer.getRemaining());
 				#ifdef PLATFORM_WINDOWS
 					if (WSAGetLastError() != WSAEWOULDBLOCK)
-						return (-1);
+					{
+						written = -1;
+						goto clear;
+					}
 				#elif defined PLATFORM_LINUX
 					if (errno != EWOULDBLOCK && errno != EAGAIN)
-						return (-1);
+					{
+						written = -1;
+						goto clear;
+					}
 				#else
 					#error Platform not supported
 				#endif
@@ -152,6 +158,7 @@ namespace libnet
 		}
 		else
 			written = -2;
+		clear:
 		if (buffer.getPosition() < buffer.getLimit())
 		{
 			uint32_t remaining = buffer.getRemaining();
@@ -189,10 +196,16 @@ namespace libnet
 				buffer.flip();
 				#ifdef PLATFORM_WINDOWS
 					if (WSAGetLastError() != WSAEWOULDBLOCK)
-						return (-1);
+					{
+						readed = -1;
+						goto clear;
+					}
 				#elif defined PLATFORM_LINUX
 					if (errno != EWOULDBLOCK && errno != EAGAIN)
-						return (-1);
+					{
+						readed = -1;
+						goto clear;
+					}
 				#else
 					#error Platform not supported
 				#endif
@@ -204,13 +217,14 @@ namespace libnet
 		}
 		else
 			readed = -2;
+		clear:
 		buffer.flip();
 		return (readed);
 	}
 
 	bool Socket::setNagle(bool active)
 	{
-		char flag = active ? 0 : 1;
+		int flag = active ? 0 : 1;
 		return (setsockopt(this->sockfd, IPPROTO_TCP, TCP_NODELAY, (char*)&flag, sizeof(flag)) == SOCKET_ERROR);
 	}
 
