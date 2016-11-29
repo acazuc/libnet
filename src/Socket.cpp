@@ -232,11 +232,11 @@ namespace libnet
 	{
 		#ifdef PLATFORM_WINDOWS
 			u_long iMode = blocking ? 0 : 1;
-			return (ioctlsocket(sockfd, FIONBIO, &iMode) == 0);
+			return (ioctlsocket(this->sockfd, FIONBIO, &iMode) == 0);
 		#elif defined PLATFORM_LINUX
 			if (!this->opened)
 				return (false);
-			int flags = fcntl(sockfd, F_GETFL, 0);
+			int flags = fcntl(this->sockfd, F_GETFL, 0);
 			if (flags < 0)
 				return (false);
 			flags = blocking ? (flags & ~O_NONBLOCK) : (flags | O_NONBLOCK);

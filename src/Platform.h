@@ -1,5 +1,5 @@
-#ifndef PLATFORM_H
-# define PLATFORM_H
+#ifndef LIBNET_PLATFORM_H
+# define LIBNET_PLATFORM_H
 
 # ifdef _WIN32
 #  define PLATFORM_WINDOWS
