@@ -58,22 +58,22 @@ namespace libnet
 	bool ServerSocket::setNagle(bool active)
 	{
 		int flag = active ? 1 : 0;
-		return (setsockopt(this->sockfd, IPPROTO_TCP, TCP_NODELAY, (char*)&flag, sizeof(int)) == SOCKET_ERROR);
+		return (setsockopt(this->sockfd, IPPROTO_TCP, TCP_NODELAY, (char*)&flag, sizeof(int)) == 0);
 	}
 
 	bool ServerSocket::setBlocking(bool blocking)
 	{
-		#ifdef PLATFORM_WINDOWS
-			u_long iMode = blocking ? 0 : 1;
-			return (ioctlsocket(sockfd, FIONBIO, &iMode) == 0);
-		#elif defined PLATFORM_LINUX
+		#ifdef LIBNET_PLATFORM_WINDOWS
+			int mode = blocking ? 0 : 1;
+			return (ioctlsocket(sockfd, FIONBIO, &mode) == 0);
+		#elif defined LIBNET_PLATFORM_LINUX
 			if (!this->opened)
 				return (false);
 			int flags = fcntl(sockfd, F_GETFL, 0);
-			if (flags < 0)
+			if (flags == -1)
 				return (false);
 			flags = blocking ? (flags & ~O_NONBLOCK) : (flags | O_NONBLOCK);
-			return ((fcntl(sockfd, F_SETFL, flags) == 0) ? true : false);
+			return (fcntl(sockfd, F_SETFL, flags) == 0);
 		#else
 			#error Not supported platform
 		#endif

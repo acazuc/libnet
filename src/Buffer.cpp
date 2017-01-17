@@ -2,9 +2,10 @@
 #include "SocketPlatform.h"
 #include <stdexcept>
 #include <iostream>
+#include <cstring>
 #include <utf8.h>
 
-#define BUFF_SIZE (16384 * 4)
+#define BUFF_SIZE (16384)
 
 static uint8_t key[] = {165, 61, 151, 185, 74, 69, 202, 40, 128, 22, 150, 71, 213, 14, 136, 139
 				, 138, 239, 138, 3, 233, 229, 247, 23, 82, 97, 84, 146, 242, 39, 71, 152
@@ -29,10 +30,12 @@ namespace libnet
 
 	Buffer::Buffer()
 	{
-		this->datas = new char[BUFF_SIZE];
+		this->datas = new uint8_t[BUFF_SIZE];
 		this->limit = BUFF_SIZE;
 		this->capacity = BUFF_SIZE;
 		this->position = 0;
+		this->crypt = false;
+		this->crypt_box = NULL;
 	}
 
 	Buffer::~Buffer()
@@ -49,10 +52,7 @@ namespace libnet
 			const uint8_t low_part = static_cast<uint8_t>(value & 0xFF);
 			return ((static_cast<uint16_t>(low_part) << 8) | high_part);
 		}
-		else
-		{
-			return (value);
-		}
+		return (value);
 	}
 
 	uint32_t Buffer::b_htonl(uint32_t value)
@@ -64,10 +64,7 @@ namespace libnet
 			const uint16_t low_part = b_htons(static_cast<uint16_t>(value & 0xFFFF));
 			return ((static_cast<uint32_t>(low_part) << 16) | high_part);
 		}
-		else
-		{
-			return (value);
-		}
+		return (value);
 	}
 
 	uint64_t Buffer::b_htonll(uint64_t value)
@@ -79,10 +76,7 @@ namespace libnet
 			const uint32_t low_part = b_htonl(static_cast<uint32_t>(value & 0xFFFFFFFF));
 			return ((static_cast<uint64_t>(low_part) << 32) | high_part);
 		}
-		else
-		{
-			return (value);
-		}
+		return (value);
 	}
 
 	uint16_t Buffer::b_ntohs(uint16_t value)
@@ -94,10 +88,7 @@ namespace libnet
 			const uint8_t low_part = static_cast<uint8_t>(value & 0xFF);
 			return ((static_cast<uint16_t>(low_part) << 8) | high_part);
 		}
-		else
-		{
-			return (value);
-		}
+		return (value);
 	}
 
 	uint32_t Buffer::b_ntohl(uint32_t value)
@@ -109,10 +100,7 @@ namespace libnet
 			const uint16_t low_part = b_ntohs(static_cast<uint16_t>(value & 0xFFFF));
 			return ((static_cast<uint32_t>(low_part) << 16) | high_part);
 		}
-		else
-		{
-			return (value);
-		}
+		return (value);
 	}
 
 	uint64_t Buffer::b_ntohll(uint64_t value)
@@ -124,19 +112,16 @@ namespace libnet
 			const uint32_t low_part = b_ntohl(static_cast<uint32_t>(value & 0xFFFFFFFF));
 			return ((static_cast<uint64_t>(low_part) << 32) | high_part);
 		}
-		else
-		{
-			return (value);
-		}
+		return (value);
 	}
 
-	void Buffer::crypt(uint32_t position, uint32_t length)
+	/*void Buffer::crypt(uint32_t position, uint32_t length)
 	{
 		uint8_t keyBox[257];
 		uint8_t tmp;
-		uint64_t i;
-		uint64_t j;
-		uint64_t k;
+		uint32_t i;
+		uint32_t j;
+		uint32_t k;
 
 		for (i = 0; i < 256; ++i)
 			keyBox[i] = (uint8_t)i;
@@ -160,11 +145,27 @@ namespace libnet
 			k = (static_cast<uint64_t>(keyBox[i]) + static_cast<uint64_t>(keyBox[j])) % 256;
 			this->datas[position + x] = this->datas[position + x] ^ keyBox[k];
 		}
-	}
+	}*/
 
-	void Buffer::crypt()
+	bool Buffer::initCrypt(const void *key, size_t keylen)
 	{
-		crypt(0, this->limit);
+		if (keylen == 0)
+			return (false);
+		this->crypt = true;
+		this->crypt_pos1 = 0;
+		this->crypt_pos2 = 0;
+		this->crypt_box = new uint8_t[256];
+		for (uint16_t i = 0; i < 256; ++i)
+			this->crypt_box[i] = (uint8_t)i;
+		uint16_t j = 0;
+		for (uint16_t i = 0; i < 256; ++i)
+		{
+			j = (j + static_cast<uint64_t>(this->crypt_box[i]) + ((uint8_t*)key)[i % keylen]) % 256;
+			uint8_t tmp = this->crypt_box[i];
+			this->crypt_box[i] = this->crypt_box[j];
+			this->crypt_box[j] = tmp;
+		}
+		return (true);
 	}
 
 	void Buffer::writeBytes(void *src, size_t len)
@@ -173,7 +174,17 @@ namespace libnet
 			throw std::out_of_range("Buffer overflow (position = " + std::to_string(this->position) + ", limit = " + std::to_string(this->limit) + ")");
 		for (size_t i = 0; i < len; i++)
 		{
-			this->datas[this->position] = ((char*)src)[i];
+			this->datas[this->position] = ((uint8_t*)src)[i];
+			if (this->crypt)
+			{
+				this->crypt_pos1 = (this->crypt_pos1 + 1U) % 256;
+				this->crypt_pos2 = (this->crypt_pos2 + static_cast<uint64_t>(this->crypt_box[this->crypt_pos1])) % 256;
+				uint8_t tmp = this->crypt_box[this->crypt_pos1];
+				this->crypt_box[this->crypt_pos1] = this->crypt_box[this->crypt_pos2];
+				this->crypt_box[this->crypt_pos2] = tmp;
+				uint8_t k = (static_cast<uint64_t>(this->crypt_box[this->crypt_pos1]) + static_cast<uint64_t>(this->crypt_box[this->crypt_pos2])) % 256;
+				this->datas[this->position] = this->datas[this->position] ^ this->crypt_box[k];
+			}
 			this->position++;
 		}
 	}
@@ -259,9 +270,19 @@ namespace libnet
 	{
 		if (this->position + len > this->limit)
 			throw std::out_of_range("Buffer underflow (position = " + std::to_string(this->position) + ", limit = " + std::to_string(this->limit) + ")");
-		for (size_t i = 0; i < len; i++)
+		for (size_t i = 0; i < len; ++i)
 		{
-			((char*)dst)[i] = this->datas[this->position];
+			if (this->crypt)
+			{
+				this->crypt_pos1 = (this->crypt_pos1 + 1U) % 256;
+				this->crypt_pos2 = (this->crypt_pos2 + static_cast<uint64_t>(this->crypt_box[this->crypt_pos1])) % 256;
+				uint8_t tmp = this->crypt_box[this->crypt_pos1];
+				this->crypt_box[this->crypt_pos1] = this->crypt_box[this->crypt_pos2];
+				this->crypt_box[this->crypt_pos2] = tmp;
+				uint8_t k = (static_cast<uint64_t>(this->crypt_box[this->crypt_pos1]) + static_cast<uint64_t>(this->crypt_box[this->crypt_pos2])) % 256;
+				this->datas[this->position] = this->datas[this->position] ^ this->crypt_box[k];
+			}
+			((uint8_t*)dst)[i] = this->datas[this->position];
 			this->position++;
 		}
 	}
@@ -274,7 +295,6 @@ namespace libnet
 	int8_t Buffer::readInt8()
 	{
 		int8_t value;
-
 		readBytes(&value, 1);
 		return (value);
 	}
@@ -282,7 +302,6 @@ namespace libnet
 	uint8_t Buffer::readUInt8()
 	{
 		uint8_t value;
-
 		readBytes(&value, 1);
 		return (value);
 	}
@@ -290,7 +309,6 @@ namespace libnet
 	int16_t Buffer::readInt16()
 	{
 		int16_t value;
-
 		readBytes(&value, 2);
 		return (static_cast<int16_t>(b_ntohs(static_cast<uint16_t>(value))));
 	}
@@ -298,7 +316,6 @@ namespace libnet
 	uint16_t Buffer::readUInt16()
 	{
 		uint16_t value;
-
 		readBytes(&value, 2);
 		return (ntohs(value));
 	}
@@ -306,7 +323,6 @@ namespace libnet
 	int32_t Buffer::readInt32()
 	{
 		int32_t value;
-
 		readBytes(&value, 4);
 		return (static_cast<int32_t>(b_ntohl(static_cast<uint32_t>(value))));
 	}
@@ -314,7 +330,6 @@ namespace libnet
 	uint32_t Buffer::readUInt32()
 	{
 		uint32_t value;
-
 		readBytes(&value, 4);
 		return (ntohl(value));
 	}
@@ -322,7 +337,6 @@ namespace libnet
 	int64_t Buffer::readInt64()
 	{
 		int64_t value;
-
 		readBytes(&value, 8);
 		return (static_cast<int64_t>(b_ntohll(static_cast<uint64_t>(value))));
 	}
@@ -330,7 +344,6 @@ namespace libnet
 	uint64_t Buffer::readUInt64()
 	{
 		uint64_t value;
-
 		readBytes(&value, 8);
 		return (b_ntohll(value));
 	}
@@ -338,27 +351,22 @@ namespace libnet
 	float Buffer::readFloat()
 	{
 		float value;
-		uint32_t tmp;
-
 		readBytes(&value, 4);
-		tmp = b_ntohl(*reinterpret_cast<uint32_t*>(&value));
+		uint32_t tmp = b_ntohl(*reinterpret_cast<uint32_t*>(&value));
 		return (*reinterpret_cast<float*>(&tmp));
 	}
 
 	double Buffer::readDouble()
 	{
 		double value;
-		uint64_t tmp;
-
 		readBytes(&value, 8);
-		tmp = b_ntohl(*reinterpret_cast<uint64_t*>(&value));
+		uint64_t tmp = b_ntohl(*reinterpret_cast<uint64_t*>(&value));
 		return (*reinterpret_cast<double*>(&tmp));
 	}
 
 	char Buffer::readChar()
 	{
 		char value;
-
 		readBytes(&value, 1);
 		return (value);
 	}
@@ -366,9 +374,7 @@ namespace libnet
 	std::string Buffer::readString()
 	{
 		std::string str;
-		int16_t length;
-
-		length = readUInt16();
+		int16_t length = readUInt16();
 		while (--length >= 0)
 			str += readChar();
 		if (!utf8::is_valid(str.begin(), str.end()))

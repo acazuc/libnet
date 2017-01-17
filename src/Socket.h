@@ -17,7 +17,6 @@ namespace libnet
 			bool waitingConnection;
 			bool connected;
 			bool opened;
-			bool crypt;
 
 		public:
 			Socket(SOCKET sockfd, SOCKADDR_IN cli_addr);
@@ -32,7 +31,6 @@ namespace libnet
 			bool setNagle(bool active);
 			bool setBlocking(bool blocking);
 			SOCKET getSockfd() {return (this->sockfd);};
-			inline void setCrypt(bool crypt) {this->crypt = crypt;};
 			inline uint32_t getIp() {return (this->cli_addr.sin_addr.s_addr);};
 
 	};

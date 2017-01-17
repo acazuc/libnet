@@ -17,12 +17,14 @@ namespace libnet
 			Buffer rBuffer;
 			Buffer wBuffer;
 			uint32_t packetStart;
+			inline void checkAutoSend() {if (wBuffer.getPosition() >= wBuffer.getLimit() * 3 / 4){send();}};
 
 		public:
 			Connection(Socket &socket);
 			~Connection();
 			void startPacket();
 			void endPacket();
+			bool initCrypt(const void *key, size_t keylen);
 			inline int32_t read() {return (this->socket.read(rBuffer));};
 			inline int32_t send() {return (this->socket.send(wBuffer));};
 			inline void writeBool(bool value) {this->wBuffer.writeBool(value);};
@@ -50,7 +52,6 @@ namespace libnet
 			inline void writeString(std::string &value) {this->wBuffer.writeString(value);};
 			inline std::string readString() {return (this->rBuffer.readString());};
 			inline void setBlocking(bool blocking) {this->socket.setBlocking(blocking);};
-			inline void setCrypt(bool crypt) {this->socket.setCrypt(crypt);};
 			inline Socket &getSocket() {return (this->socket);};
 			inline Buffer &getRBuffer() {return (this->rBuffer);};
 			inline Buffer &getWBuffer() {return (this->wBuffer);};

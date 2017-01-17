@@ -14,7 +14,11 @@ namespace libnet
 			uint32_t position;
 			uint32_t capacity;
 			uint32_t limit;
-			char *datas;
+			uint16_t crypt_pos1;
+			uint16_t crypt_pos2;
+			uint8_t *crypt_box;
+			uint8_t *datas;
+			bool crypt;
 			uint16_t b_htons(uint16_t value);
 			uint32_t b_htonl(uint32_t value);
 			uint64_t b_htonll(uint64_t value);
@@ -25,8 +29,7 @@ namespace libnet
 		public:
 			Buffer();
 			~Buffer();
-			void crypt(uint32_t position, uint32_t length);
-			void crypt();
+			bool initCrypt(const void *key, size_t keylen);
 			void writeBytes(void *src, size_t len);
 			void writeBool(bool value);
 			void writeInt8(int8_t value);
@@ -62,7 +65,7 @@ namespace libnet
 			inline uint32_t getPosition() {return (this->position);};
 			inline uint32_t getCapacity() {return (this->capacity);};
 			inline uint32_t getLimit() {return (this->limit);};
-			inline char *getDatas() {return (this->datas);};
+			inline uint8_t *getDatas() {return (this->datas);};
 
 	};
 }

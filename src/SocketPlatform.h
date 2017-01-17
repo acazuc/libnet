@@ -3,11 +3,11 @@
 
 # include "Platform.h"
 
-# ifdef PLATFORM_WINDOWS
+# ifdef LIBNET_PLATFORM_WINDOWS
 #  include <winsock2.h>
 #  include <ws2tcpip.h>
    typedef int SOCKLEN_T;
-# elif defined PLATFORM_LINUX
+# elif defined LIBNET_PLATFORM_LINUX
 #  include <netinet/tcp.h>
 #  include <sys/types.h>
 #  include <sys/socket.h>

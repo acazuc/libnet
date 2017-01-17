@@ -2,9 +2,9 @@
 # define LIBNET_PLATFORM_H
 
 # ifdef _WIN32
-#  define PLATFORM_WINDOWS
+#  define LIBNET_PLATFORM_WINDOWS
 # elif defined __linux__
-#  define PLATFORM_LINUX
+#  define LIBNET_PLATFORM_LINUX
 # endif
 
 #endif

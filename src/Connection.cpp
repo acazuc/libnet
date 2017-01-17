@@ -27,6 +27,16 @@ namespace libnet
 		this->wBuffer.setPosition(this->packetStart);
 		this->wBuffer.writeUInt32(currentPos - this->packetStart - 4);
 		this->wBuffer.setPosition(currentPos);
+		checkAutoSend();
+	}
+
+	bool Connection::initCrypt(const void *key, size_t keylen)
+	{
+		if (!this->rBuffer.initCrypt(key, keylen))
+			return (false);
+		if (!this->wBuffer.initCrypt(key, keylen))
+			return (false);
+		return (true);
 	}
 
 }

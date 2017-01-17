@@ -12,7 +12,6 @@ namespace libnet
 		this->waitingConnection = false;
 		this->connected = true;
 		this->opened = true;
-		this->crypt = false;
 	}
 
 	Socket::Socket()
@@ -20,7 +19,6 @@ namespace libnet
 		this->waitingConnection = false;
 		this->connected = false;
 		this->opened = false;
-		this->crypt = false;
 	}
 
 	Socket::~Socket()
@@ -66,10 +64,10 @@ namespace libnet
 		serv_addr.sin_port = htons(port);
 		if (::connect(this->sockfd, (struct sockaddr*)&serv_addr, sizeof(serv_addr)) == SOCKET_ERROR)
 		{
-			#ifdef PLATFORM_WINDOWS
+			#ifdef LIBNET_PLATFORM_WINDOWS
 				if (WSAGetLastError() != WSAEWOULDBLOCK)
 					return (false);
-			#elif defined PLATFORM_LINUX
+			#elif defined LIBNET_PLATFORM_LINUX
 				if (errno != EINPROGRESS)
 					return (false);
 			#else
@@ -105,10 +103,10 @@ namespace libnet
 			socklen_t len = sizeof(err);
 			if (getsockopt(this->sockfd, SOL_SOCKET, SO_ERROR, (char*)&err, &len) == SOCKET_ERROR)
 				return (-1);
-			#ifdef PLATFORM_WINDOWS
+			#ifdef LIBNET_PLATFORM_WINDOWS
 				if (err && err != WSAEINPROGRESS)
 					return (-1);
-			#elif defined PLATFORM_LINUX
+			#elif defined LIBNET_PLATFORM_LINUX
 				if (err && err != EINPROGRESS)
 					return (-1);
 			#else
@@ -126,22 +124,20 @@ namespace libnet
 
 		if (!this->connected)
 			return (-1);
+		if (buffer.getPosition() == 0)
+			return (-2);
 		buffer.flip();
 		if (buffer.getRemaining() > 0)
 		{
-			if (this->crypt)
-				buffer.crypt(buffer.getPosition(), buffer.getRemaining());
 			if ((written = ::send(this->sockfd, buffer.getDatas() + buffer.getPosition(), buffer.getRemaining(), 0)) == SOCKET_ERROR)
 			{
-				if (this->crypt)
-					buffer.crypt(buffer.getPosition(), buffer.getRemaining());
-				#ifdef PLATFORM_WINDOWS
+				#ifdef LIBNET_PLATFORM_WINDOWS
 					if (WSAGetLastError() != WSAEWOULDBLOCK)
 					{
 						written = -1;
 						goto clear;
 					}
-				#elif defined PLATFORM_LINUX
+				#elif defined LIBNET_PLATFORM_LINUX
 					if (errno != EWOULDBLOCK && errno != EAGAIN)
 					{
 						written = -1;
@@ -152,8 +148,6 @@ namespace libnet
 				#endif
 				return (-2);
 			}
-			if (this->crypt)
-				buffer.crypt(buffer.getPosition(), buffer.getRemaining());
 			buffer.setPosition(buffer.getPosition() + written);
 		}
 		else
@@ -194,13 +188,13 @@ namespace libnet
 			if ((readed = ::recv(this->sockfd, buffer.getDatas() + buffer.getPosition(), buffer.getRemaining(), 0)) == SOCKET_ERROR)
 			{
 				buffer.flip();
-				#ifdef PLATFORM_WINDOWS
+				#ifdef LIBNET_PLATFORM_WINDOWS
 					if (WSAGetLastError() != WSAEWOULDBLOCK)
 					{
 						readed = -1;
 						goto clear;
 					}
-				#elif defined PLATFORM_LINUX
+				#elif defined LIBNET_PLATFORM_LINUX
 					if (errno != EWOULDBLOCK && errno != EAGAIN)
 					{
 						readed = -1;
@@ -211,8 +205,6 @@ namespace libnet
 				#endif
 				return (-2);
 			}
-			if (this->crypt)
-				buffer.crypt(buffer.getPosition(), readed);
 			buffer.setPosition(buffer.getPosition() + readed);
 		}
 		else
@@ -224,16 +216,16 @@ namespace libnet
 
 	bool Socket::setNagle(bool active)
 	{
-		int flag = active ? 0 : 1;
-		return (setsockopt(this->sockfd, IPPROTO_TCP, TCP_NODELAY, (char*)&flag, sizeof(flag)) == SOCKET_ERROR);
+		int flag = active ? 1 : 0;
+		return (setsockopt(this->sockfd, IPPROTO_TCP, TCP_NODELAY, (void*)&flag, sizeof(flag)) == 0);
 	}
 
 	bool Socket::setBlocking(bool blocking)
 	{
-		#ifdef PLATFORM_WINDOWS
-			u_long iMode = blocking ? 0 : 1;
-			return (ioctlsocket(this->sockfd, FIONBIO, &iMode) == 0);
-		#elif defined PLATFORM_LINUX
+		#ifdef LIBNET_PLATFORM_WINDOWS
+			u_long mode = blocking ? 0 : 1;
+			return (ioctlsocket(this->sockfd, FIONBIO, &mode) == 0);
+		#elif defined LIBNET_PLATFORM_LINUX
 			if (!this->opened)
 				return (false);
 			int flags = fcntl(this->sockfd, F_GETFL, 0);
