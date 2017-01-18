@@ -9,9 +9,9 @@
    typedef int SOCKLEN_T;
 # elif defined LIBNET_PLATFORM_LINUX
 #  include <netinet/tcp.h>
-#  include <sys/types.h>
 #  include <sys/socket.h>
 #  include <netinet/in.h>
+#  include <sys/types.h>
 #  include <unistd.h>
 #  include <netdb.h>
 #  include <fcntl.h>
@@ -22,7 +22,7 @@
    typedef socklen_t SOCKLEN_T;
    typedef int SOCKET;
 # else
-#  error Unsupported platform
+#  error Platform not supported
 # endif
 
 #endif

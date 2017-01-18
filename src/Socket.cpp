@@ -155,11 +155,14 @@ namespace libnet
 		clear:
 		if (buffer.getPosition() < buffer.getLimit())
 		{
-			uint32_t remaining = buffer.getRemaining();
+			std::memcpy(buffer.getDatas(), buffer.getDatas() + buffer.getPosition(), buffer.getRemaining());
+			buffer.setPosition(buffer.getRemaining());
+			buffer.setLimit(buffer.getCapacity());
+			/*uint32_t remaining = buffer.getRemaining();
 			char tmp[remaining];
-			memcpy(tmp, buffer.getDatas() + buffer.getPosition(), remaining);
+			std::memcpy(tmp, buffer.getDatas() + buffer.getPosition(), remaining);
 			buffer.clear();
-			buffer.writeBytes(tmp, remaining);
+			buffer.writeBytes(tmp, remaining);*/
 		}
 		else
 			buffer.clear();
@@ -174,12 +177,15 @@ namespace libnet
 			return (-1);
 		if (buffer.getPosition() < buffer.getLimit())
 		{
-			uint32_t remaining = buffer.getRemaining();
+			std::memcpy(buffer.getDatas(), buffer.getDatas() + buffer.getPosition(), buffer.getRemaining());
+			buffer.setPosition(buffer.getRemaining());
+			buffer.setLimit(buffer.getCapacity());
+			/*uint32_t remaining = buffer.getRemaining();
 			char *tmp = new char[remaining];
-			memcpy(tmp, buffer.getDatas() + buffer.getPosition(), remaining);
+			std::memcpy(tmp, buffer.getDatas() + buffer.getPosition(), remaining);
 			buffer.clear();
 			buffer.writeBytes(tmp, remaining);
-			delete[] (tmp);
+			delete[] (tmp);*/
 		}
 		else
 			buffer.clear();
