@@ -171,7 +171,7 @@ namespace libnet
 	void Buffer::writeBytes(void *src, size_t len)
 	{
 		if (this->position + len > this->limit)
-			throw std::out_of_range("Buffer overflow (position = " + std::to_string(this->position) + ", limit = " + std::to_string(this->limit) + ")");
+			throw std::out_of_range("Buffer overflow (position = " + std::to_string(this->position) + ", limit = " + std::to_string(this->limit) + ", len = " + std::to_string(len) + ")");
 		for (size_t i = 0; i < len; i++)
 		{
 			this->datas[this->position] = ((uint8_t*)src)[i];
@@ -260,16 +260,13 @@ namespace libnet
 	void Buffer::writeString(std::string &value)
 	{
 		writeUInt16(value.length());
-		for (uint16_t i = 0; i < value.length(); ++i)
-		{
-			writeChar(value[i]);
-		}
+		writeBytes(const_cast<char*>(value.c_str()), value.length());
 	}
 
 	void Buffer::readBytes(void *dst, size_t len)
 	{
 		if (this->position + len > this->limit)
-			throw std::out_of_range("Buffer underflow (position = " + std::to_string(this->position) + ", limit = " + std::to_string(this->limit) + ")");
+			throw std::out_of_range("Buffer underflow (position = " + std::to_string(this->position) + ", limit = " + std::to_string(this->limit) + ", len = " + std::to_string(len) + ")");
 		for (size_t i = 0; i < len; ++i)
 		{
 			if (this->crypt)
@@ -375,9 +372,8 @@ namespace libnet
 	{
 		std::string str;
 		int16_t length = readUInt16();
-		while (--length >= 0)
-			str += readChar();
-		if (!utf8::is_valid(str.begin(), str.end()))
+		str.resize(length);
+		readBytes(const_cast<char*>(str.c_str()), length);
 		{
 			std::string tmp;
 			utf8::replace_invalid(str.begin(), str.end(), back_inserter(tmp));

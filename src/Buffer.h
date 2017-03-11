@@ -64,6 +64,7 @@ namespace libnet
 			inline void setPosition(uint32_t position) {this->position = position;};
 			inline uint32_t getPosition() {return (this->position);};
 			inline uint32_t getCapacity() {return (this->capacity);};
+			inline void setLimit(uint32_t limit) {this->limit = limit;};
 			inline uint32_t getLimit() {return (this->limit);};
 			inline uint8_t *getDatas() {return (this->datas);};
 
