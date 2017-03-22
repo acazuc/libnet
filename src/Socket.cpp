@@ -155,7 +155,7 @@ namespace libnet
 		clear:
 		if (buffer.getPosition() < buffer.getLimit())
 		{
-			std::memcpy(buffer.getDatas(), buffer.getDatas() + buffer.getPosition(), buffer.getRemaining());
+			std::memmove(buffer.getDatas(), buffer.getDatas() + buffer.getPosition(), buffer.getRemaining());
 			buffer.setPosition(buffer.getRemaining());
 			buffer.setLimit(buffer.getCapacity());
 			/*uint32_t remaining = buffer.getRemaining();
@@ -177,7 +177,7 @@ namespace libnet
 			return (-1);
 		if (buffer.getPosition() < buffer.getLimit())
 		{
-			std::memcpy(buffer.getDatas(), buffer.getDatas() + buffer.getPosition(), buffer.getRemaining());
+			std::memmove(buffer.getDatas(), buffer.getDatas() + buffer.getPosition(), buffer.getRemaining());
 			buffer.setPosition(buffer.getRemaining());
 			buffer.setLimit(buffer.getCapacity());
 			/*uint32_t remaining = buffer.getRemaining();
