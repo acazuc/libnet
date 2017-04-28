@@ -40,8 +40,20 @@ namespace libnet
 	{
 		if (this->opened)
 		{
-			closesocket(sockfd);
+			closesocket(this->sockfd);
 			this->opened = false;
+			this->connected = false;
+			this->waitingConnection = false;
+			return (true);
+		}
+		return (false);
+	}
+
+	bool Socket::shutdown()
+	{
+		if (this->opened)
+		{
+			::shutdown(this->sockfd, SHUT_RDWR);
 			this->connected = false;
 			this->waitingConnection = false;
 			return (true);

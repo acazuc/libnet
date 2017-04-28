@@ -24,6 +24,7 @@ namespace libnet
 			~Socket();
 			bool open();
 			bool close();
+			bool shutdown();
 			bool connect(std::string host, uint16_t port);
 			int getConnectionStatus();
 			int32_t send(Buffer &buffer);
