@@ -1,5 +1,6 @@
 #include "Socket.h"
 #include <cstring>
+#include <iostream>
 
 namespace libnet
 {
@@ -153,7 +154,8 @@ namespace libnet
 				#else
 					#error Platform not supported
 				#endif
-				return (-2);
+				written = -2;
+				goto clear;
 			}
 			buffer.setPosition(buffer.getPosition() + written);
 		}
@@ -165,11 +167,6 @@ namespace libnet
 			std::memmove(buffer.getDatas(), buffer.getDatas() + buffer.getPosition(), buffer.getRemaining());
 			buffer.setPosition(buffer.getRemaining());
 			buffer.setLimit(buffer.getCapacity());
-			/*uint32_t remaining = buffer.getRemaining();
-			char tmp[remaining];
-			std::memcpy(tmp, buffer.getDatas() + buffer.getPosition(), remaining);
-			buffer.clear();
-			buffer.writeBytes(tmp, remaining);*/
 		}
 		else
 			buffer.clear();
@@ -187,12 +184,6 @@ namespace libnet
 			std::memmove(buffer.getDatas(), buffer.getDatas() + buffer.getPosition(), buffer.getRemaining());
 			buffer.setPosition(buffer.getRemaining());
 			buffer.setLimit(buffer.getCapacity());
-			/*uint32_t remaining = buffer.getRemaining();
-			char *tmp = new char[remaining];
-			std::memcpy(tmp, buffer.getDatas() + buffer.getPosition(), remaining);
-			buffer.clear();
-			buffer.writeBytes(tmp, remaining);
-			delete[] (tmp);*/
 		}
 		else
 			buffer.clear();
@@ -216,7 +207,8 @@ namespace libnet
 				#else
 					#error Platform not supported
 				#endif
-				return (-2);
+				readed = -2;
+				goto clear;
 			}
 			buffer.setPosition(buffer.getPosition() + readed);
 		}
