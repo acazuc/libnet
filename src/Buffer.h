@@ -16,6 +16,7 @@ namespace libnet
 			uint32_t limit;
 			uint16_t crypt_pos1;
 			uint16_t crypt_pos2;
+			uint8_t *cryptedDatas;
 			uint8_t *crypt_box;
 			uint8_t *datas;
 			bool crypt;
@@ -27,10 +28,10 @@ namespace libnet
 			uint64_t b_ntohll(uint64_t value);
 
 		public:
-			Buffer();
+			Buffer(uint64_t capacity = 1024);
 			~Buffer();
 			bool initCrypt(const void *key, size_t keylen);
-			void writeBytes(void *src, size_t len);
+			void writeBytes(const void *src, size_t len);
 			void writeBool(bool value);
 			void writeInt8(int8_t value);
 			void writeUInt8(uint8_t value);
@@ -58,6 +59,7 @@ namespace libnet
 			double readDouble();
 			char readChar();
 			std::string readString();
+			void resize(uint64_t len);
 			inline void clear() {this->limit = this->capacity;this->position = 0;};
 			inline void flip() {this->limit = this->position;this->position = 0;};
 			inline uint32_t getRemaining() {return (this->limit - this->position);};

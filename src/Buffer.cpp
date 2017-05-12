@@ -1,38 +1,17 @@
 #include "Buffer.h"
 #include "SocketPlatform.h"
 #include <stdexcept>
-#include <iostream>
 #include <cstring>
 #include <utf8.h>
-
-#define BUFF_SIZE (16384)
-
-static uint8_t key[] = {165, 61, 151, 185, 74, 69, 202, 40, 128, 22, 150, 71, 213, 14, 136, 139
-				, 138, 239, 138, 3, 233, 229, 247, 23, 82, 97, 84, 146, 242, 39, 71, 152
-				, 101, 223, 82, 176, 37, 30, 216, 165, 53, 112, 237, 11, 127, 119, 151, 10
-				, 103, 34, 13, 81, 9, 6, 104, 91, 103, 189, 237, 90, 228, 54, 243, 74
-				, 22, 70, 250, 59, 101, 212, 225, 154, 69, 208, 165, 196, 72, 61, 207, 175
-				, 96, 220, 2, 105, 226, 106, 196, 74, 40, 179, 165, 14, 233, 153, 88, 0
-				, 224, 84, 59, 70, 41, 30, 224, 110, 238, 135, 52, 55, 196, 4, 231, 38
-				, 225, 233, 143, 196, 85, 85, 16, 125, 9, 182, 139, 242, 80, 228, 242, 50
-				, 57, 47, 121, 99, 77, 90, 209, 60, 226, 7, 116, 168, 12, 92, 206, 237
-				, 71, 94, 178, 156, 180, 195, 27, 189, 122, 167, 176, 203, 140, 164, 253, 198
-				, 212, 119, 42, 35, 210, 252, 96, 181, 4, 212, 94, 16, 50, 46, 254, 121
-				, 141, 177, 23, 66, 117, 50, 0, 240, 217, 177, 188, 103, 87, 186, 46, 44
-				, 51, 89, 79, 6, 86, 175, 188, 91, 133, 28, 108, 184, 74, 107, 51, 215
-				, 30, 74, 26, 147, 124, 27, 133, 87, 205, 66, 190, 37, 252, 237, 82, 49
-				, 71, 162, 55, 158, 83, 244, 249, 216, 17, 103, 146, 92, 210, 197, 53, 240
-				, 16, 80, 133, 141, 107, 11, 229, 57, 77, 164, 95, 75, 147, 177, 124};
-static uint8_t keylen = 255;
 
 namespace libnet
 {
 
-	Buffer::Buffer()
+	Buffer::Buffer(uint64_t capacity)
 	{
-		this->datas = new uint8_t[BUFF_SIZE];
-		this->limit = BUFF_SIZE;
-		this->capacity = BUFF_SIZE;
+		this->datas = new uint8_t[capacity];
+		this->limit = capacity;
+		this->capacity = capacity;
 		this->position = 0;
 		this->crypt = false;
 		this->crypt_box = NULL;
@@ -168,7 +147,7 @@ namespace libnet
 		return (true);
 	}
 
-	void Buffer::writeBytes(void *src, size_t len)
+	void Buffer::writeBytes(const void *src, size_t len)
 	{
 		if (this->position + len > this->limit)
 			throw std::out_of_range("Buffer overflow (position = " + std::to_string(this->position) + ", limit = " + std::to_string(this->limit) + ", len = " + std::to_string(len) + ")");
@@ -380,6 +359,23 @@ namespace libnet
 			str = tmp;
 		}
 		return (str);
+	}
+
+	void Buffer::resize(uint64_t len)
+	{
+		if (len == 0)
+			len = 1;
+		uint8_t *newDatas = new uint8_t[len];
+		std::memmove(newDatas, this->datas, this->limit);
+		delete[] (this->datas);
+		if (this->limit >= len || this->limit == this->capacity)
+		{
+			this->limit = len;
+			if (this->position > this->limit)
+				this->position = this->limit;
+		}
+		this->capacity = len;
+		this->datas = newDatas;
 	}
 
 }

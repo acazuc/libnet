@@ -27,6 +27,8 @@ namespace libnet
 			bool initCrypt(const void *key, size_t keylen);
 			inline int32_t read() {return (this->socket.read(rBuffer));};
 			inline int32_t send() {return (this->socket.send(wBuffer));};
+			inline void writeBytes(const void *data, size_t len) {this->wBuffer.writeBytes(data, len);};
+			inline void readBytes(void *data, size_t len) {this->rBuffer.readBytes(data, len);};
 			inline void writeBool(bool value) {this->wBuffer.writeBool(value);};
 			inline bool readBool() {return (this->rBuffer.readBool());};
 			inline void writeInt8(int8_t value) {this->wBuffer.writeInt8(value);};

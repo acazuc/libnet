@@ -1,6 +1,5 @@
 #include "Socket.h"
 #include <cstring>
-#include <iostream>
 
 namespace libnet
 {
@@ -38,27 +37,23 @@ namespace libnet
 
 	bool Socket::close()
 	{
-		if (this->opened)
-		{
-			closesocket(this->sockfd);
-			this->opened = false;
-			this->connected = false;
-			this->waitingConnection = false;
-			return (true);
-		}
-		return (false);
+		if (!this->opened)
+			return (false);
+		closesocket(this->sockfd);
+		this->opened = false;
+		this->connected = false;
+		this->waitingConnection = false;
+		return (true);
 	}
 
 	bool Socket::shutdown()
 	{
-		if (this->opened)
-		{
-			::shutdown(this->sockfd, SHUT_RDWR);
-			this->connected = false;
-			this->waitingConnection = false;
-			return (true);
-		}
-		return (false);
+		if (!this->opened)
+			return (false);
+		::shutdown(this->sockfd, SHUT_RDWR);
+		this->connected = false;
+		this->waitingConnection = false;
+		return (true);
 	}
 
 	bool Socket::connect(std::string host, uint16_t port)
