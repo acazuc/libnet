@@ -30,7 +30,7 @@ namespace libnet
 	{
 		if (!this->opened)
 			return (false);
-		memset((char *)&server_addr, 0, sizeof(server_addr));
+		std::memset((char *)&server_addr, 0, sizeof(server_addr));
 		server_addr.sin_family = AF_INET;
 		server_addr.sin_addr.s_addr = INADDR_ANY;
 		server_addr.sin_port = htons(port);
@@ -46,7 +46,6 @@ namespace libnet
 		SOCKADDR_IN cli_addr;
 		SOCKLEN_T cli_len;
 		SOCKET newsockfd;
-
 		if (!this->bound)
 			return (NULL);
 		cli_len = sizeof(cli_addr);

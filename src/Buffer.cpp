@@ -9,6 +9,7 @@ namespace libnet
 
 	Buffer::Buffer(uint64_t capacity)
 	{
+		this->cryptedDatas = NULL;
 		this->datas = new uint8_t[capacity];
 		this->limit = capacity;
 		this->capacity = capacity;
@@ -239,7 +240,7 @@ namespace libnet
 	void Buffer::writeString(std::string &value)
 	{
 		writeUInt16(value.length());
-		writeBytes(const_cast<char*>(value.c_str()), value.length());
+		writeBytes(value.c_str(), value.length());
 	}
 
 	void Buffer::readBytes(void *dst, size_t len)

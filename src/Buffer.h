@@ -28,7 +28,7 @@ namespace libnet
 			uint64_t b_ntohll(uint64_t value);
 
 		public:
-			Buffer(uint64_t capacity = 1024);
+			Buffer(uint64_t capacity);
 			~Buffer();
 			bool initCrypt(const void *key, size_t keylen);
 			void writeBytes(const void *src, size_t len);

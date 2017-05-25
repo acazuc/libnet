@@ -6,6 +6,8 @@ namespace libnet
 
 	Connection::Connection(Socket &socket)
 	: socket(socket)
+	, rBuffer(1024)
+	, wBuffer(1024)
 	{
 		rBuffer.flip();
 	}

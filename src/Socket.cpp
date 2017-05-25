@@ -97,7 +97,6 @@ namespace libnet
 		struct timeval tv;
 		fd_set fdset;
 		int ret;
-
 		tv.tv_sec = 0;
 		tv.tv_usec = 1000;
 		FD_ZERO(&fdset);
@@ -169,7 +168,9 @@ namespace libnet
 			buffer.setLimit(buffer.getCapacity());
 		}
 		else
+		{
 			buffer.clear();
+		}
 		return (written);
 	}
 
@@ -186,7 +187,9 @@ namespace libnet
 			buffer.setLimit(buffer.getCapacity());
 		}
 		else
+		{
 			buffer.clear();
+		}
 		if (buffer.getRemaining() > 0)
 		{
 			if ((readed = ::recv(this->sockfd, buffer.getDatas() + buffer.getPosition(), buffer.getRemaining(), 0)) == SOCKET_ERROR)
@@ -227,12 +230,14 @@ namespace libnet
 
 	bool Socket::setBlocking(bool blocking)
 	{
+		if (!this->opened)
+			return (false);
 		#ifdef LIBNET_PLATFORM_WINDOWS
 			u_long mode = blocking ? 0 : 1;
 			return (ioctlsocket(this->sockfd, FIONBIO, &mode) == 0);
 		#elif defined LIBNET_PLATFORM_LINUX
-			if (!this->opened)
-				return (false);
+			/*int mode = blocking ? 0 : 1;
+			return (ioctl(this->sockfd, FIONBIO, &mode) == 0);*/
 			int flags = fcntl(this->sockfd, F_GETFL, 0);
 			if (flags < 0)
 				return (false);

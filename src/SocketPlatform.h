@@ -12,6 +12,7 @@
 #  include <sys/socket.h>
 #  include <netinet/in.h>
 #  include <sys/types.h>
+#  include <sys/ioctl.h>
 #  include <unistd.h>
 #  include <netdb.h>
 #  include <fcntl.h>
