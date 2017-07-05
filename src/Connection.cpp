@@ -23,6 +23,12 @@ namespace libnet
 		this->wBuffer.writeUInt32(0);
 	}
 
+	void Connection::startPacket(uint16_t packet)
+	{
+		startPacket();
+		this->wBuffer.writeUInt16(packet);
+	}
+
 	void Connection::endPacket()
 	{
 		uint32_t currentPos = this->wBuffer.getPosition();

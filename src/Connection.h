@@ -23,6 +23,7 @@ namespace libnet
 			Connection(Socket &socket);
 			~Connection();
 			void startPacket();
+			void startPacket(uint16_t packet);
 			void endPacket();
 			bool initCrypt(const void *key, size_t keylen);
 			inline int32_t read() {return (this->socket.read(rBuffer));};

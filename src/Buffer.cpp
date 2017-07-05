@@ -152,7 +152,9 @@ namespace libnet
 	{
 		if (this->position + len > this->limit)
 			throw std::out_of_range("Buffer overflow (position = " + std::to_string(this->position) + ", limit = " + std::to_string(this->limit) + ", len = " + std::to_string(len) + ")");
-		for (size_t i = 0; i < len; i++)
+		std::memmove(&this->datas[this->position], src, len);
+		this->position += len;
+		/*for (size_t i = 0; i < len; i++)
 		{
 			this->datas[this->position] = ((uint8_t*)src)[i];
 			if (this->crypt)
@@ -166,7 +168,7 @@ namespace libnet
 				this->datas[this->position] = this->datas[this->position] ^ this->crypt_box[k];
 			}
 			this->position++;
-		}
+		}*/
 	}
 
 	void Buffer::writeBool(bool value)
@@ -247,7 +249,9 @@ namespace libnet
 	{
 		if (this->position + len > this->limit)
 			throw std::out_of_range("Buffer underflow (position = " + std::to_string(this->position) + ", limit = " + std::to_string(this->limit) + ", len = " + std::to_string(len) + ")");
-		for (size_t i = 0; i < len; ++i)
+		std::memmove(dst, &this->datas[this->position], len);
+		this->position += len;
+		/*for (size_t i = 0; i < len; ++i)
 		{
 			if (this->crypt)
 			{
@@ -261,7 +265,7 @@ namespace libnet
 			}
 			((uint8_t*)dst)[i] = this->datas[this->position];
 			this->position++;
-		}
+		}*/
 	}
 
 	bool Buffer::readBool()
