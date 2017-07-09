@@ -98,7 +98,7 @@ namespace libnet
 		fd_set fdset;
 		int ret;
 		tv.tv_sec = 0;
-		tv.tv_usec = 1000;
+		tv.tv_usec = 1;
 		FD_ZERO(&fdset);
 		FD_SET(this->sockfd, &fdset);
 		if ((ret = select(this->sockfd + 1, NULL, &fdset, &fdset, &tv)))
@@ -160,10 +160,11 @@ namespace libnet
 		}
 		else
 			written = -2;
-		clear:
+	clear:
 		if (buffer.getPosition() < buffer.getLimit())
 		{
-			std::memmove(buffer.getDatas(), buffer.getDatas() + buffer.getPosition(), buffer.getRemaining());
+			if (buffer.getPosition() != 0)
+				std::memmove(buffer.getDatas(), buffer.getDatas() + buffer.getPosition(), buffer.getRemaining());
 			buffer.setPosition(buffer.getRemaining());
 			buffer.setLimit(buffer.getCapacity());
 		}
@@ -182,7 +183,8 @@ namespace libnet
 			return (-1);
 		if (buffer.getPosition() < buffer.getLimit())
 		{
-			std::memmove(buffer.getDatas(), buffer.getDatas() + buffer.getPosition(), buffer.getRemaining());
+			if (buffer.getPosition() != 0)
+				std::memmove(buffer.getDatas(), buffer.getDatas() + buffer.getPosition(), buffer.getRemaining());
 			buffer.setPosition(buffer.getRemaining());
 			buffer.setLimit(buffer.getCapacity());
 		}
@@ -217,7 +219,7 @@ namespace libnet
 		}
 		else
 			readed = -2;
-		clear:
+	clear:
 		buffer.flip();
 		return (readed);
 	}
