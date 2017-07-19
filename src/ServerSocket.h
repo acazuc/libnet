@@ -21,6 +21,8 @@ namespace libnet
 			ServerSocket();
 			~ServerSocket();
 			bool open();
+			bool close();
+			bool shutdown();
 			bool bind(uint16_t port);
 			Socket *accept();
 			bool setNagle(bool active);

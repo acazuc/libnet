@@ -26,6 +26,24 @@ namespace libnet
 		return (true);
 	}
 
+	bool ServerSocket::close()
+	{
+		if (!this->opened)
+			return (false);
+		closesocket(this->sockfd);
+		this->opened = false;
+		this->bound = false;
+		return (true);
+	}
+
+	bool ServerSocket::shutdown()
+	{
+		if (!this->opened)
+			return (false);
+		::shutdown(this->sockfd, SHUT_RDWR);
+		return (true);
+	}
+
 	bool ServerSocket::bind(uint16_t port)
 	{
 		if (!this->opened)

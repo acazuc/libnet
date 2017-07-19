@@ -1,6 +1,7 @@
 #ifndef LIBNET_BUFFER_H
 # define LIBNET_BUFFER_H
 
+# include <iostream>
 # include <cstdint>
 # include <string>
 
@@ -60,13 +61,13 @@ namespace libnet
 			char readChar();
 			std::string readString();
 			void resize(uint64_t len);
-			inline void clear() {this->limit = this->capacity;this->position = 0;};
-			inline void flip() {this->limit = this->position;this->position = 0;};
+			void clear();
+			void flip();
 			inline uint32_t getRemaining() {return (this->limit - this->position);};
-			inline void setPosition(uint32_t position) {this->position = position;};
+			void setPosition(uint32_t position);
 			inline uint32_t getPosition() {return (this->position);};
 			inline uint32_t getCapacity() {return (this->capacity);};
-			inline void setLimit(uint32_t limit) {this->limit = limit;};
+			void setLimit(uint32_t limit);
 			inline uint32_t getLimit() {return (this->limit);};
 			inline uint8_t *getDatas() {return (this->datas);};
 

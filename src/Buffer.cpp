@@ -25,38 +25,17 @@ namespace libnet
 
 	uint16_t Buffer::b_htons(uint16_t value)
 	{
-		int num = 42;
-		if (*reinterpret_cast<const char*>(&num) == num)
-		{
-			const uint8_t high_part = static_cast<uint8_t>(value >> 8);
-			const uint8_t low_part = static_cast<uint8_t>(value & 0xFF);
-			return ((static_cast<uint16_t>(low_part) << 8) | high_part);
-		}
-		return (value);
+		return (b_ntohs(value));
 	}
 
 	uint32_t Buffer::b_htonl(uint32_t value)
 	{
-		int num = 42;
-		if (*reinterpret_cast<const char*>(&num) == num)
-		{
-			const uint16_t high_part = b_htons(static_cast<uint16_t>(value >> 16));
-			const uint16_t low_part = b_htons(static_cast<uint16_t>(value & 0xFFFF));
-			return ((static_cast<uint32_t>(low_part) << 16) | high_part);
-		}
-		return (value);
+		return (b_ntohl(value));
 	}
 
 	uint64_t Buffer::b_htonll(uint64_t value)
 	{
-		int num = 42;
-		if (*reinterpret_cast<const char*>(&num) == num)
-		{
-			const uint32_t high_part = b_htonl(static_cast<uint32_t>(value >> 32));
-			const uint32_t low_part = b_htonl(static_cast<uint32_t>(value & 0xFFFFFFFF));
-			return ((static_cast<uint64_t>(low_part) << 32) | high_part);
-		}
-		return (value);
+		return (b_ntohll(value));
 	}
 
 	uint16_t Buffer::b_ntohs(uint16_t value)
@@ -64,33 +43,37 @@ namespace libnet
 		int num = 42;
 		if (*reinterpret_cast<const char*>(&num) == num)
 		{
-			const uint8_t high_part = static_cast<uint8_t>(value >> 8);
-			const uint8_t low_part = static_cast<uint8_t>(value & 0xFF);
-			return ((static_cast<uint16_t>(low_part) << 8) | high_part);
+			const uint16_t highPart = (value >> 8) & 0xFF;
+			const uint16_t lowPart = value & 0xFF;
+			return ((lowPart << 8) | highPart);
 		}
 		return (value);
 	}
 
 	uint32_t Buffer::b_ntohl(uint32_t value)
 	{
-		int num = 42;
-		if (*reinterpret_cast<const char*>(&num) == num)
+		int32_t num = 42;
+		if (*reinterpret_cast<char*>(&num) == num)
 		{
-			const uint16_t high_part = b_ntohs(static_cast<uint16_t>(value >> 16));
-			const uint16_t low_part = b_ntohs(static_cast<uint16_t>(value & 0xFFFF));
-			return ((static_cast<uint32_t>(low_part) << 16) | high_part);
+			const uint16_t highVal = (value >> 16) & 0xFFFF;
+			const uint16_t lowVal = value & 0xFFFF;
+			const uint32_t highPart = b_ntohs(*reinterpret_cast<const uint16_t*>(&highVal));
+			const uint32_t lowPart = b_ntohs(*reinterpret_cast<const uint16_t*>(&lowVal));
+			return ((lowPart << 16) | highPart);
 		}
 		return (value);
 	}
 
 	uint64_t Buffer::b_ntohll(uint64_t value)
 	{
-		int num = 42;
-		if (*reinterpret_cast<const char*>(&num) == num)
+		int32_t num = 42;
+		if (*reinterpret_cast<char*>(&num) == num)
 		{
-			const uint32_t high_part = b_ntohl(static_cast<uint32_t>(value >> 32));
-			const uint32_t low_part = b_ntohl(static_cast<uint32_t>(value & 0xFFFFFFFF));
-			return ((static_cast<uint64_t>(low_part) << 32) | high_part);
+			const uint32_t highVal = (value >> 32) & 0xFFFFFFFF;
+			const uint32_t lowVal = value & 0xFFFFFFFF;
+			const uint64_t highPart = b_ntohl(*reinterpret_cast<const uint32_t*>(&highVal));
+			const uint64_t lowPart = b_ntohl(*reinterpret_cast<const uint32_t*>(&lowVal));
+			return ((lowPart << 32) | highPart);
 		}
 		return (value);
 	}
@@ -153,7 +136,7 @@ namespace libnet
 		if (this->position + len > this->limit)
 			throw std::out_of_range("Buffer overflow (position = " + std::to_string(this->position) + ", limit = " + std::to_string(this->limit) + ", len = " + std::to_string(len) + ")");
 		std::memmove(&this->datas[this->position], src, len);
-		this->position += len;
+		setPosition(this->position + len);
 		/*for (size_t i = 0; i < len; i++)
 		{
 			this->datas[this->position] = ((uint8_t*)src)[i];
@@ -188,7 +171,7 @@ namespace libnet
 
 	void Buffer::writeInt16(int16_t value)
 	{
-		uint16_t val = b_htons(static_cast<uint16_t>(value));
+		uint16_t val = b_htons(*reinterpret_cast<uint16_t*>(&value));
 		writeBytes(&val, 2);
 
 	}
@@ -200,7 +183,7 @@ namespace libnet
 
 	void Buffer::writeInt32(int32_t value)
 	{
-		uint32_t val = b_htonl(static_cast<uint32_t>(value));
+		uint32_t val = b_htonl(*reinterpret_cast<uint32_t*>(&value));
 		writeBytes(&val, 4);
 	}
 
@@ -212,7 +195,7 @@ namespace libnet
 
 	void Buffer::writeInt64(int64_t value)
 	{
-		uint64_t val = b_htonll(static_cast<uint64_t>(value));
+		uint64_t val = b_htonll(*reinterpret_cast<uint64_t*>(&value));
 		writeBytes(&val, 8);
 	}
 
@@ -250,7 +233,7 @@ namespace libnet
 		if (this->position + len > this->limit)
 			throw std::out_of_range("Buffer underflow (position = " + std::to_string(this->position) + ", limit = " + std::to_string(this->limit) + ", len = " + std::to_string(len) + ")");
 		std::memmove(dst, &this->datas[this->position], len);
-		this->position += len;
+		setPosition(this->position + len);
 		/*for (size_t i = 0; i < len; ++i)
 		{
 			if (this->crypt)
@@ -291,35 +274,38 @@ namespace libnet
 	{
 		int16_t value;
 		readBytes(&value, 2);
-		return (static_cast<int16_t>(b_ntohs(static_cast<uint16_t>(value))));
+		uint16_t tmp = b_ntohs(*reinterpret_cast<uint16_t*>(&value));
+		return (*reinterpret_cast<int16_t*>(&tmp));
 	}
 
 	uint16_t Buffer::readUInt16()
 	{
 		uint16_t value;
 		readBytes(&value, 2);
-		return (ntohs(value));
+		return (b_ntohs(value));
 	}
 
 	int32_t Buffer::readInt32()
 	{
 		int32_t value;
 		readBytes(&value, 4);
-		return (static_cast<int32_t>(b_ntohl(static_cast<uint32_t>(value))));
+		uint32_t tmp = b_ntohl(*reinterpret_cast<uint32_t*>(&value));
+		return (*reinterpret_cast<int32_t*>(&tmp));
 	}
 
 	uint32_t Buffer::readUInt32()
 	{
 		uint32_t value;
 		readBytes(&value, 4);
-		return (ntohl(value));
+		return (b_ntohl(value));
 	}
 
 	int64_t Buffer::readInt64()
 	{
 		int64_t value;
 		readBytes(&value, 8);
-		return (static_cast<int64_t>(b_ntohll(static_cast<uint64_t>(value))));
+		uint64_t tmp = b_ntohll(*reinterpret_cast<uint64_t*>(&value));
+		return (*reinterpret_cast<int64_t*>(&tmp));
 	}
 
 	uint64_t Buffer::readUInt64()
@@ -371,16 +357,40 @@ namespace libnet
 		if (len == 0)
 			len = 1;
 		uint8_t *newDatas = new uint8_t[len];
-		std::memmove(newDatas, this->datas, this->limit);
+		std::memmove(newDatas, this->datas, std::min(static_cast<uint32_t>(len), this->limit));
 		delete[] (this->datas);
 		if (this->limit >= len || this->limit == this->capacity)
 		{
-			this->limit = len;
+			setLimit(len);
 			if (this->position > this->limit)
-				this->position = this->limit;
+			{
+				setPosition(this->limit);
+			}
 		}
 		this->capacity = len;
 		this->datas = newDatas;
+	}
+
+	void Buffer::setPosition(uint32_t position)
+	{
+		this->position = position;
+	}
+
+	void Buffer::setLimit(uint32_t limit)
+	{
+		this->limit = limit;
+	}
+
+	void Buffer::clear()
+	{
+		setLimit(this->capacity);
+		setPosition(0);
+	}
+
+	void Buffer::flip()
+	{
+		setLimit(this->position);
+		setPosition(0);
 	}
 
 }

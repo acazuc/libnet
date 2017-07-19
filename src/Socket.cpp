@@ -1,6 +1,5 @@
 #include "Socket.h"
 #include <cstring>
-#include <iostream>
 
 namespace libnet
 {
@@ -134,34 +133,34 @@ namespace libnet
 		if (buffer.getPosition() == 0)
 			return (-2);
 		buffer.flip();
-		if (buffer.getRemaining() > 0)
+		if (buffer.getRemaining() == 0)
 		{
-			if ((written = ::send(this->sockfd, buffer.getDatas() + buffer.getPosition(), buffer.getRemaining(), 0)) == SOCKET_ERROR)
+			written = -2;
+			goto clear;
+		}
+		if ((written = ::send(this->sockfd, buffer.getDatas(), buffer.getRemaining(), 0)) == SOCKET_ERROR)
+		{
+			#ifdef LIBNET_PLATFORM_WINDOWS
+			if (WSAGetLastError() != WSAEWOULDBLOCK)
 			{
-				#ifdef LIBNET_PLATFORM_WINDOWS
-					if (WSAGetLastError() != WSAEWOULDBLOCK)
-					{
-						written = -1;
-						goto clear;
-					}
-				#elif defined LIBNET_PLATFORM_LINUX
-					if (errno != EWOULDBLOCK && errno != EAGAIN)
-					{
-						written = -1;
-						goto clear;
-					}
-				#else
-					#error Platform not supported
-				#endif
-				written = -2;
+				written = -1;
 				goto clear;
 			}
-			buffer.setPosition(buffer.getPosition() + written);
-		}
-		else
+			#elif defined LIBNET_PLATFORM_LINUX
+			if (errno != EWOULDBLOCK && errno != EAGAIN)
+			{
+				written = -1;
+				goto clear;
+			}
+			#else
+				#error Platform not supported
+			#endif
 			written = -2;
+			goto clear;
+		}
+		buffer.setPosition(buffer.getPosition() + written);
 	clear:
-		if (buffer.getPosition() < buffer.getLimit())
+		if (buffer.getRemaining() > 0)
 		{
 			if (buffer.getPosition() != 0)
 				std::memmove(buffer.getDatas(), buffer.getDatas() + buffer.getPosition(), buffer.getRemaining());
@@ -181,7 +180,7 @@ namespace libnet
 
 		if (!this->connected)
 			return (-1);
-		if (buffer.getPosition() < buffer.getLimit())
+		if (buffer.getRemaining() > 0)
 		{
 			if (buffer.getPosition() != 0)
 				std::memmove(buffer.getDatas(), buffer.getDatas() + buffer.getPosition(), buffer.getRemaining());
@@ -192,33 +191,32 @@ namespace libnet
 		{
 			buffer.clear();
 		}
-		if (buffer.getRemaining() > 0)
+		if (buffer.getRemaining() == 0)
 		{
-			if ((readed = ::recv(this->sockfd, buffer.getDatas() + buffer.getPosition(), buffer.getRemaining(), 0)) == SOCKET_ERROR)
+			readed = 0;
+			goto clear;
+		}
+		if ((readed = ::recv(this->sockfd, buffer.getDatas() + buffer.getPosition(), buffer.getRemaining(), 0)) == SOCKET_ERROR)
+		{
+			#ifdef LIBNET_PLATFORM_WINDOWS
+			if (WSAGetLastError() != WSAEWOULDBLOCK)
 			{
-				buffer.flip();
-				#ifdef LIBNET_PLATFORM_WINDOWS
-					if (WSAGetLastError() != WSAEWOULDBLOCK)
-					{
-						readed = -1;
-						goto clear;
-					}
-				#elif defined LIBNET_PLATFORM_LINUX
-					if (errno != EWOULDBLOCK && errno != EAGAIN)
-					{
-						readed = -1;
-						goto clear;
-					}
-				#else
-					#error Platform not supported
-				#endif
-				readed = -2;
+				readed = -1;
 				goto clear;
 			}
-			buffer.setPosition(buffer.getPosition() + readed);
-		}
-		else
+			#elif defined LIBNET_PLATFORM_LINUX
+			if (errno != EWOULDBLOCK && errno != EAGAIN)
+			{
+				readed = -1;
+				goto clear;
+			}
+			#else
+				#error Platform not supported
+			#endif
 			readed = -2;
+			goto clear;
+		}
+		buffer.setPosition(buffer.getPosition() + readed);
 	clear:
 		buffer.flip();
 		return (readed);
@@ -235,16 +233,16 @@ namespace libnet
 		if (!this->opened)
 			return (false);
 		#ifdef LIBNET_PLATFORM_WINDOWS
-			u_long mode = blocking ? 0 : 1;
-			return (ioctlsocket(this->sockfd, FIONBIO, &mode) == 0);
+		u_long mode = blocking ? 0 : 1;
+		return (ioctlsocket(this->sockfd, FIONBIO, &mode) == 0);
 		#elif defined LIBNET_PLATFORM_LINUX
-			/*int mode = blocking ? 0 : 1;
-			return (ioctl(this->sockfd, FIONBIO, &mode) == 0);*/
-			int flags = fcntl(this->sockfd, F_GETFL, 0);
-			if (flags < 0)
-				return (false);
-			flags = blocking ? (flags & ~O_NONBLOCK) : (flags | O_NONBLOCK);
-			return (fcntl(this->sockfd, F_SETFL, flags) == 0);
+		/*int mode = blocking ? 0 : 1;
+		  return (ioctl(this->sockfd, FIONBIO, &mode) == 0);*/
+		int flags = fcntl(this->sockfd, F_GETFL, 0);
+		if (flags < 0)
+			return (false);
+		flags = blocking ? (flags & ~O_NONBLOCK) : (flags | O_NONBLOCK);
+		return (fcntl(this->sockfd, F_SETFL, flags) == 0);
 		#else
 			#error Platform not supported
 		#endif
