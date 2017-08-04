@@ -236,13 +236,45 @@ namespace libnet
 		u_long mode = blocking ? 0 : 1;
 		return (ioctlsocket(this->sockfd, FIONBIO, &mode) == 0);
 		#elif defined LIBNET_PLATFORM_LINUX
-		/*int mode = blocking ? 0 : 1;
-		  return (ioctl(this->sockfd, FIONBIO, &mode) == 0);*/
 		int flags = fcntl(this->sockfd, F_GETFL, 0);
 		if (flags < 0)
 			return (false);
 		flags = blocking ? (flags & ~O_NONBLOCK) : (flags | O_NONBLOCK);
 		return (fcntl(this->sockfd, F_SETFL, flags) == 0);
+		#else
+			#error Platform not supported
+		#endif
+	}
+
+	bool Socket::setRecvTimeout(uint64_t timeout)
+	{
+		if (!this->opened)
+			return (false);
+		#ifdef LIBNET_PLATFORM_LINUX
+		struct timeval tv;
+		tv.tv_sec = timeout / 1000;
+		tv.tv_usec = timeout % 1000;
+		return (setsockopt(this->sockfd, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv)) == 0);
+		#elif defined LIBNET_PLATFORM_WINDOWS
+		uint32_t time = timeout;
+		return (setsockopt(this->sockfd, SOL_SOCKET, SO_RCVTIMEO, &time, sizeof(time)) == 0);
+		#else
+			#error Platform not supported
+		#endif
+	}
+
+	bool Socket::setSendTimeout(uint64_t timeout)
+	{
+		if (!this->opened)
+			return (false);
+		#ifdef LIBNET_PLATFORM_LINUX
+		struct timeval tv;
+		tv.tv_sec = timeout / 1000;
+		tv.tv_usec = timeout % 1000;
+		return (setsockopt(this->sockfd, SOL_SOCKET, SO_SNDTIMEO, &tv, sizeof(tv)) == 0);
+		#elif defined LIBNET_PLATFORM_WINDOWS
+		uint32_t time = timeout;
+		return (setsockopt(this->sockfd, SOL_SOCKET, SO_SNDTIMEO, &time, sizeof(time)) == 0);
 		#else
 			#error Platform not supported
 		#endif
