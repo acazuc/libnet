@@ -23,6 +23,7 @@ SRCS_NAME = Buffer.cpp \
 		ServerSocket.cpp \
 		Socket.cpp \
 		Connection.cpp \
+		Packet.cpp \
 
 SRCS = $(addprefix $(SRCS_PATH), $(SRCS_NAME))
 

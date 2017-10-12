@@ -14,8 +14,6 @@ namespace libnet
 		this->limit = capacity;
 		this->capacity = capacity;
 		this->position = 0;
-		this->crypt = false;
-		this->crypt_box = NULL;
 	}
 
 	Buffer::~Buffer()
@@ -110,7 +108,7 @@ namespace libnet
 		}
 	}*/
 
-	bool Buffer::initCrypt(const void *key, size_t keylen)
+	/*bool Buffer::initCrypt(const void *key, size_t keylen)
 	{
 		if (keylen == 0)
 			return (false);
@@ -129,7 +127,7 @@ namespace libnet
 			this->crypt_box[j] = tmp;
 		}
 		return (true);
-	}
+	}*/
 
 	void Buffer::writeBytes(const void *src, size_t len)
 	{
@@ -137,21 +135,6 @@ namespace libnet
 			throw std::out_of_range("Buffer overflow (position = " + std::to_string(this->position) + ", limit = " + std::to_string(this->limit) + ", len = " + std::to_string(len) + ")");
 		std::memmove(&this->datas[this->position], src, len);
 		setPosition(this->position + len);
-		/*for (size_t i = 0; i < len; i++)
-		{
-			this->datas[this->position] = ((uint8_t*)src)[i];
-			if (this->crypt)
-			{
-				this->crypt_pos1 = (this->crypt_pos1 + 1U) % 256;
-				this->crypt_pos2 = (this->crypt_pos2 + static_cast<uint64_t>(this->crypt_box[this->crypt_pos1])) % 256;
-				uint8_t tmp = this->crypt_box[this->crypt_pos1];
-				this->crypt_box[this->crypt_pos1] = this->crypt_box[this->crypt_pos2];
-				this->crypt_box[this->crypt_pos2] = tmp;
-				uint8_t k = (static_cast<uint64_t>(this->crypt_box[this->crypt_pos1]) + static_cast<uint64_t>(this->crypt_box[this->crypt_pos2])) % 256;
-				this->datas[this->position] = this->datas[this->position] ^ this->crypt_box[k];
-			}
-			this->position++;
-		}*/
 	}
 
 	void Buffer::writeBool(bool value)
@@ -234,21 +217,6 @@ namespace libnet
 			throw std::out_of_range("Buffer underflow (position = " + std::to_string(this->position) + ", limit = " + std::to_string(this->limit) + ", len = " + std::to_string(len) + ")");
 		std::memmove(dst, &this->datas[this->position], len);
 		setPosition(this->position + len);
-		/*for (size_t i = 0; i < len; ++i)
-		{
-			if (this->crypt)
-			{
-				this->crypt_pos1 = (this->crypt_pos1 + 1U) % 256;
-				this->crypt_pos2 = (this->crypt_pos2 + static_cast<uint64_t>(this->crypt_box[this->crypt_pos1])) % 256;
-				uint8_t tmp = this->crypt_box[this->crypt_pos1];
-				this->crypt_box[this->crypt_pos1] = this->crypt_box[this->crypt_pos2];
-				this->crypt_box[this->crypt_pos2] = tmp;
-				uint8_t k = (static_cast<uint64_t>(this->crypt_box[this->crypt_pos1]) + static_cast<uint64_t>(this->crypt_box[this->crypt_pos2])) % 256;
-				this->datas[this->position] = this->datas[this->position] ^ this->crypt_box[k];
-			}
-			((uint8_t*)dst)[i] = this->datas[this->position];
-			this->position++;
-		}*/
 	}
 
 	bool Buffer::readBool()

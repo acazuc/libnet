@@ -3,8 +3,10 @@
 
 # include "Buffer.h"
 # include "Socket.h"
+# include "Packet.h"
 # include <cstdint>
 # include <string>
+# include <queue>
 
 namespace libnet
 {
@@ -13,6 +15,8 @@ namespace libnet
 	{
 
 		private:
+			std::queue<Packet*> packetsQueue;
+			Packet *currentPacket;
 			Socket &socket;
 			Buffer rBuffer;
 			Buffer wBuffer;

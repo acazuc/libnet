@@ -4,7 +4,8 @@ namespace libnet
 {
 
 	Connection::Connection(Socket &socket)
-	: socket(socket)
+	: currentPacket(NULL)
+	, socket(socket)
 	, rBuffer(1024)
 	, wBuffer(1024)
 	{
@@ -13,7 +14,7 @@ namespace libnet
 
 	Connection::~Connection()
 	{
-		//Empty
+		delete (currentPacket);
 	}
 
 	void Connection::startPacket()
@@ -39,10 +40,10 @@ namespace libnet
 
 	bool Connection::initCrypt(const void *key, size_t keylen)
 	{
-		if (!this->rBuffer.initCrypt(key, keylen))
+		/*if (!this->rBuffer.initCrypt(key, keylen))
 			return (false);
 		if (!this->wBuffer.initCrypt(key, keylen))
-			return (false);
+			return (false);*/
 		return (true);
 	}
 

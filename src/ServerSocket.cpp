@@ -40,7 +40,13 @@ namespace libnet
 	{
 		if (!this->opened)
 			return (false);
-		::shutdown(this->sockfd, SHUT_RDWR);
+		#ifdef LIBNET_PLATFORM_WINDOWS
+			::shutdown(this->sockfd, SD_BOTH);
+		#elif defined LIBNET_PLATFORM_LINUX
+			::shutdown(this->sockfd, SHUT_RDWR);
+		#else
+			#error Platform not supported
+		#endif
 		return (true);
 	}
 

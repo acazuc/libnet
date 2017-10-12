@@ -50,7 +50,13 @@ namespace libnet
 	{
 		if (!this->opened)
 			return (false);
-		::shutdown(this->sockfd, SHUT_RDWR);
+		#ifdef LIBNET_PLATFORM_WINDOWS
+			::shutdown(this->sockfd, SD_BOTH);
+		#elif defined PLATFORM_LINUX
+			::shutdown(this->sockfd, SHUT_RDWR);
+		#else
+			#error Platform not supported
+		#endif
 		this->connected = false;
 		this->waitingConnection = false;
 		return (true);
@@ -138,7 +144,7 @@ namespace libnet
 			written = -2;
 			goto clear;
 		}
-		if ((written = ::send(this->sockfd, buffer.getDatas(), buffer.getRemaining(), 0)) == SOCKET_ERROR)
+		if ((written = ::send(this->sockfd, reinterpret_cast<const char*>(const_cast<const uint8_t*>(buffer.getDatas())), buffer.getRemaining(), 0)) == SOCKET_ERROR)
 		{
 			#ifdef LIBNET_PLATFORM_WINDOWS
 			if (WSAGetLastError() != WSAEWOULDBLOCK)
@@ -196,7 +202,7 @@ namespace libnet
 			readed = 0;
 			goto clear;
 		}
-		if ((readed = ::recv(this->sockfd, buffer.getDatas() + buffer.getPosition(), buffer.getRemaining(), 0)) == SOCKET_ERROR)
+		if ((readed = ::recv(this->sockfd, reinterpret_cast<char*>(buffer.getDatas() + buffer.getPosition()), buffer.getRemaining(), 0)) == SOCKET_ERROR)
 		{
 			#ifdef LIBNET_PLATFORM_WINDOWS
 			if (WSAGetLastError() != WSAEWOULDBLOCK)
@@ -225,7 +231,7 @@ namespace libnet
 	bool Socket::setNagle(bool active)
 	{
 		int flag = active ? 1 : 0;
-		return (setsockopt(this->sockfd, IPPROTO_TCP, TCP_NODELAY, (void*)&flag, sizeof(flag)) == 0);
+		return (setsockopt(this->sockfd, IPPROTO_TCP, TCP_NODELAY, reinterpret_cast<const char*>(const_cast<const int*>(&flag)), sizeof(flag)) == 0);
 	}
 
 	bool Socket::setBlocking(bool blocking)
@@ -256,8 +262,8 @@ namespace libnet
 		tv.tv_usec = timeout % 1000;
 		return (setsockopt(this->sockfd, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv)) == 0);
 		#elif defined LIBNET_PLATFORM_WINDOWS
-		uint32_t time = timeout;
-		return (setsockopt(this->sockfd, SOL_SOCKET, SO_RCVTIMEO, &time, sizeof(time)) == 0);
+		int time = timeout;
+		return (setsockopt(this->sockfd, SOL_SOCKET, SO_RCVTIMEO, reinterpret_cast<const char*>(const_cast<const int*>(&time)), sizeof(time)) == 0);
 		#else
 			#error Platform not supported
 		#endif
@@ -273,8 +279,8 @@ namespace libnet
 		tv.tv_usec = timeout % 1000;
 		return (setsockopt(this->sockfd, SOL_SOCKET, SO_SNDTIMEO, &tv, sizeof(tv)) == 0);
 		#elif defined LIBNET_PLATFORM_WINDOWS
-		uint32_t time = timeout;
-		return (setsockopt(this->sockfd, SOL_SOCKET, SO_SNDTIMEO, &time, sizeof(time)) == 0);
+		int time = timeout;
+		return (setsockopt(this->sockfd, SOL_SOCKET, SO_SNDTIMEO, reinterpret_cast<const char*>(const_cast<const int*>(&time)), sizeof(time)) == 0);
 		#else
 			#error Platform not supported
 		#endif
