@@ -52,7 +52,7 @@ namespace libnet
 			return (false);
 		#ifdef LIBNET_PLATFORM_WINDOWS
 			::shutdown(this->sockfd, SD_BOTH);
-		#elif defined PLATFORM_LINUX
+		#elif defined LIBNET_PLATFORM_LINUX
 			::shutdown(this->sockfd, SHUT_RDWR);
 		#else
 			#error Platform not supported
