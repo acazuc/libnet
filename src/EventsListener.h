@@ -5,7 +5,7 @@
 
 # ifdef LIBNET_PLATFORM_LINUX
 
-# include "Connection.h"
+# include "Socket.h"
 # include <sys/epoll.h>
 
 # define EVENT_READ 1

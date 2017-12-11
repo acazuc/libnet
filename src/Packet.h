@@ -1,9 +1,8 @@
 #ifndef LIBNET_PACKET_H
 # define LIBNET_PACKET_H
 
-# include "Buffer.h"
 # include <cstdint>
-# include <cstring>
+# include <vector>
 # include <string>
 
 namespace libnet
@@ -13,10 +12,15 @@ namespace libnet
 	{
 
 	private:
-		Buffer buffer;
+		std::vector<uint8_t> data;
+		uint32_t position;
+		uint16_t id;
+		uint16_t b_ntohs(uint16_t value);
+		uint32_t b_ntohl(uint32_t value);
+		uint64_t b_ntohll(uint64_t value);
 
 	public:
-		Packet();
+		Packet(uint16_t id);
 		~Packet();
 		void writeBytes(const void *src, size_t len);
 		void writeBool(bool value);
@@ -30,7 +34,6 @@ namespace libnet
 		void writeUInt64(uint64_t value);
 		void writeFloat(float value);
 		void writeDouble(double value);
-		void writeChar(char value);
 		void writeString(std::string &value);
 		void readBytes(void *dst, size_t len);
 		bool readBool();
@@ -44,9 +47,11 @@ namespace libnet
 		uint64_t readUInt64();
 		float readFloat();
 		double readDouble();
-		char readChar();
 		std::string readString();
 		void resize(uint64_t len);
+		inline uint32_t getSize() {return (this->data.size());};
+		inline const uint8_t *getData() {return (this->data.data());};
+		inline uint16_t getId() {return (this->id);};
 
 	};
 

@@ -8,12 +8,13 @@ namespace libnet
 {
 
 	Buffer::Buffer(uint64_t capacity)
+	: position(0)
+	, capacity(capacity)
+	, limit(capacity)
+	, cryptBox(NULL)
+	, crypted(false)
 	{
-		this->cryptedDatas = NULL;
 		this->datas = new uint8_t[capacity];
-		this->limit = capacity;
-		this->capacity = capacity;
-		this->position = 0;
 	}
 
 	Buffer::~Buffer()
@@ -38,7 +39,7 @@ namespace libnet
 
 	uint16_t Buffer::b_ntohs(uint16_t value)
 	{
-		int num = 42;
+		const int32_t num = 42;
 		if (*reinterpret_cast<const char*>(&num) == num)
 		{
 			const uint16_t highPart = (value >> 8) & 0xFF;
@@ -50,8 +51,8 @@ namespace libnet
 
 	uint32_t Buffer::b_ntohl(uint32_t value)
 	{
-		int32_t num = 42;
-		if (*reinterpret_cast<char*>(&num) == num)
+		const int32_t num = 42;
+		if (*reinterpret_cast<const char*>(&num) == num)
 		{
 			const uint16_t highVal = (value >> 16) & 0xFFFF;
 			const uint16_t lowVal = value & 0xFFFF;
@@ -64,8 +65,8 @@ namespace libnet
 
 	uint64_t Buffer::b_ntohll(uint64_t value)
 	{
-		int32_t num = 42;
-		if (*reinterpret_cast<char*>(&num) == num)
+		const int32_t num = 42;
+		if (*reinterpret_cast<const char*>(&num) == num)
 		{
 			const uint32_t highVal = (value >> 32) & 0xFFFFFFFF;
 			const uint32_t lowVal = value & 0xFFFFFFFF;
@@ -76,53 +77,50 @@ namespace libnet
 		return (value);
 	}
 
-	/*void Buffer::crypt(uint32_t position, uint32_t length)
+	void Buffer::crypt(uint32_t position, uint32_t length)
 	{
-		uint8_t tmp;
-		uint32_t i;
-		uint32_t j;
-		uint32_t k;
-
-		i = 0;
-		j = 0;
 		for (uint32_t x = 0; x < length; ++x)
 		{
-			i = (i + 1U) % 256;
-			j = (j + this->crypt_box[i]) % 256;
-			tmp = this->crypt_box[i];
-			this->crypt_box[i] = this->crypt_box[j];
-			this->crypt_box[j] = tmp;
-			k = (this->crypt_box[i] + this->crypt_box[j]) % 256;
-			this->datas[position + x] = this->datas[position + x] ^ this->crypt_box[k];
+			++this->cryptPos1;
+			this->cryptPos2 += this->cryptBox[this->cryptPos1];
+			std::swap(this->cryptBox[this->cryptPos1], this->cryptBox[this->cryptPos2]);
+			uint8_t k = this->cryptBox[this->cryptPos1] + this->cryptBox[this->cryptPos2];
+			this->datas[position + x] = this->datas[position + x] ^ this->cryptBox[k];
 		}
-	}*/
+	}
 
-	/*bool Buffer::initCrypt(const void *key, size_t keylen)
+	bool Buffer::initCrypt(const void *key, size_t keylen)
 	{
 		if (keylen == 0)
 			return (false);
-		this->crypt = true;
-		this->crypt_pos1 = 0;
-		this->crypt_pos2 = 0;
-		this->crypt_box = new uint8_t[256];
+		this->cryptBox = new uint8_t[256];
+		this->crypted = true;
+		this->cryptPos1 = 0;
+		this->cryptPos2 = 0;
 		for (uint16_t i = 0; i < 256; ++i)
-			this->crypt_box[i] = (uint8_t)i;
-		uint16_t j = 0;
+			this->cryptBox[i] = (uint8_t)i;
+		uint8_t j = 0;
 		for (uint16_t i = 0; i < 256; ++i)
 		{
-			j = (j + static_cast<uint64_t>(this->crypt_box[i]) + ((uint8_t*)key)[i % keylen]) % 256;
-			uint8_t tmp = this->crypt_box[i];
-			this->crypt_box[i] = this->crypt_box[j];
-			this->crypt_box[j] = tmp;
+			j += this->cryptBox[i] + (reinterpret_cast<const uint8_t*>(key))[i % keylen];
+			std::swap(this->cryptBox[i], this->cryptBox[j]);
 		}
 		return (true);
-	}*/
+	}
+
+	void Buffer::disableCrypt()
+	{
+		delete[] (this->cryptBox);
+		this->crypted = false;
+	}
 
 	void Buffer::writeBytes(const void *src, size_t len)
 	{
 		if (this->position + len > this->limit)
 			throw std::out_of_range("Buffer overflow (position = " + std::to_string(this->position) + ", limit = " + std::to_string(this->limit) + ", len = " + std::to_string(len) + ")");
 		std::memmove(&this->datas[this->position], src, len);
+		if (this->crypted)
+			crypt(this->position, len);
 		setPosition(this->position + len);
 	}
 
@@ -189,11 +187,6 @@ namespace libnet
 		writeBytes(&val, 8);
 	}
 
-	void Buffer::writeChar(char value)
-	{
-		writeBytes(&value, 1);
-	}
-
 	void Buffer::writeString(std::string &value)
 	{
 		writeUInt16(value.length());
@@ -205,6 +198,8 @@ namespace libnet
 		if (this->position + len > this->limit)
 			throw std::out_of_range("Buffer underflow (position = " + std::to_string(this->position) + ", limit = " + std::to_string(this->limit) + ", len = " + std::to_string(len) + ")");
 		std::memmove(dst, &this->datas[this->position], len);
+		if (this->crypted)
+			crypt(this->position, len);
 		setPosition(this->position + len);
 	}
 
@@ -286,13 +281,6 @@ namespace libnet
 		readBytes(&value, 8);
 		uint64_t tmp = b_ntohl(*reinterpret_cast<uint64_t*>(&value));
 		return (*reinterpret_cast<double*>(&tmp));
-	}
-
-	char Buffer::readChar()
-	{
-		char value;
-		readBytes(&value, 1);
-		return (value);
 	}
 
 	std::string Buffer::readString()

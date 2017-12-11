@@ -50,13 +50,13 @@ namespace libnet
 	{
 		if (!this->opened)
 			return (false);
-		#ifdef LIBNET_PLATFORM_WINDOWS
-			::shutdown(this->sockfd, SD_BOTH);
-		#elif defined LIBNET_PLATFORM_LINUX
-			::shutdown(this->sockfd, SHUT_RDWR);
-		#else
-			#error Platform not supported
-		#endif
+#ifdef LIBNET_PLATFORM_WINDOWS
+		::shutdown(this->sockfd, SD_BOTH);
+#elif defined LIBNET_PLATFORM_LINUX
+		::shutdown(this->sockfd, SHUT_RDWR);
+#else
+#error Platform not supported
+#endif
 		this->connected = false;
 		this->waitingConnection = false;
 		return (true);
@@ -77,15 +77,15 @@ namespace libnet
 		serv_addr.sin_port = htons(port);
 		if (::connect(this->sockfd, (struct sockaddr*)&serv_addr, sizeof(serv_addr)) == SOCKET_ERROR)
 		{
-			#ifdef LIBNET_PLATFORM_WINDOWS
-				if (WSAGetLastError() != WSAEWOULDBLOCK)
-					return (false);
-			#elif defined LIBNET_PLATFORM_LINUX
-				if (errno != EINPROGRESS)
-					return (false);
-			#else
-				#error Platform not supported
-			#endif
+#ifdef LIBNET_PLATFORM_WINDOWS
+			if (WSAGetLastError() != WSAEWOULDBLOCK)
+				return (false);
+#elif defined LIBNET_PLATFORM_LINUX
+			if (errno != EINPROGRESS)
+				return (false);
+#else
+#error Platform not supported
+#endif
 			this->waitingConnection = true;
 		}
 		else
@@ -115,15 +115,15 @@ namespace libnet
 			socklen_t len = sizeof(err);
 			if (getsockopt(this->sockfd, SOL_SOCKET, SO_ERROR, (char*)&err, &len) == SOCKET_ERROR)
 				return (-1);
-			#ifdef LIBNET_PLATFORM_WINDOWS
-				if (err && err != WSAEINPROGRESS)
-					return (-1);
-			#elif defined LIBNET_PLATFORM_LINUX
-				if (err && err != EINPROGRESS)
-					return (-1);
-			#else
-				#error Unsupported platform
-			#endif
+#ifdef LIBNET_PLATFORM_WINDOWS
+			if (err && err != WSAEINPROGRESS)
+				return (-1);
+#elif defined LIBNET_PLATFORM_LINUX
+			if (err && err != EINPROGRESS)
+				return (-1);
+#else
+#error Unsupported platform
+#endif
 			this->connected = true;
 			return (1);
 		}
@@ -146,26 +146,26 @@ namespace libnet
 		}
 		if ((written = ::send(this->sockfd, reinterpret_cast<const char*>(const_cast<const uint8_t*>(buffer.getDatas())), buffer.getRemaining(), 0)) == SOCKET_ERROR)
 		{
-			#ifdef LIBNET_PLATFORM_WINDOWS
+#ifdef LIBNET_PLATFORM_WINDOWS
 			if (WSAGetLastError() != WSAEWOULDBLOCK)
 			{
 				written = -1;
 				goto clear;
 			}
-			#elif defined LIBNET_PLATFORM_LINUX
+#elif defined LIBNET_PLATFORM_LINUX
 			if (errno != EWOULDBLOCK && errno != EAGAIN)
 			{
 				written = -1;
 				goto clear;
 			}
-			#else
-				#error Platform not supported
-			#endif
+#else
+#error Platform not supported
+#endif
 			written = -2;
 			goto clear;
 		}
 		buffer.setPosition(buffer.getPosition() + written);
-	clear:
+clear:
 		if (buffer.getRemaining() > 0)
 		{
 			if (buffer.getPosition() != 0)
@@ -204,26 +204,26 @@ namespace libnet
 		}
 		if ((readed = ::recv(this->sockfd, reinterpret_cast<char*>(buffer.getDatas() + buffer.getPosition()), buffer.getRemaining(), 0)) == SOCKET_ERROR)
 		{
-			#ifdef LIBNET_PLATFORM_WINDOWS
+#ifdef LIBNET_PLATFORM_WINDOWS
 			if (WSAGetLastError() != WSAEWOULDBLOCK)
 			{
 				readed = -1;
 				goto clear;
 			}
-			#elif defined LIBNET_PLATFORM_LINUX
+#elif defined LIBNET_PLATFORM_LINUX
 			if (errno != EWOULDBLOCK && errno != EAGAIN)
 			{
 				readed = -1;
 				goto clear;
 			}
-			#else
-				#error Platform not supported
-			#endif
+#else
+#error Platform not supported
+#endif
 			readed = -2;
 			goto clear;
 		}
 		buffer.setPosition(buffer.getPosition() + readed);
-	clear:
+clear:
 		buffer.flip();
 		return (readed);
 	}
@@ -238,52 +238,52 @@ namespace libnet
 	{
 		if (!this->opened)
 			return (false);
-		#ifdef LIBNET_PLATFORM_WINDOWS
+#ifdef LIBNET_PLATFORM_WINDOWS
 		u_long mode = blocking ? 0 : 1;
 		return (ioctlsocket(this->sockfd, FIONBIO, &mode) == 0);
-		#elif defined LIBNET_PLATFORM_LINUX
+#elif defined LIBNET_PLATFORM_LINUX
 		int flags = fcntl(this->sockfd, F_GETFL, 0);
 		if (flags < 0)
 			return (false);
 		flags = blocking ? (flags & ~O_NONBLOCK) : (flags | O_NONBLOCK);
 		return (fcntl(this->sockfd, F_SETFL, flags) == 0);
-		#else
-			#error Platform not supported
-		#endif
+#else
+#error Platform not supported
+#endif
 	}
 
 	bool Socket::setRecvTimeout(uint64_t timeout)
 	{
 		if (!this->opened)
 			return (false);
-		#ifdef LIBNET_PLATFORM_LINUX
+#ifdef LIBNET_PLATFORM_LINUX
 		struct timeval tv;
 		tv.tv_sec = timeout / 1000;
 		tv.tv_usec = timeout % 1000;
 		return (setsockopt(this->sockfd, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv)) == 0);
-		#elif defined LIBNET_PLATFORM_WINDOWS
+#elif defined LIBNET_PLATFORM_WINDOWS
 		int time = timeout;
 		return (setsockopt(this->sockfd, SOL_SOCKET, SO_RCVTIMEO, reinterpret_cast<const char*>(const_cast<const int*>(&time)), sizeof(time)) == 0);
-		#else
-			#error Platform not supported
-		#endif
+#else
+#error Platform not supported
+#endif
 	}
 
 	bool Socket::setSendTimeout(uint64_t timeout)
 	{
 		if (!this->opened)
 			return (false);
-		#ifdef LIBNET_PLATFORM_LINUX
+#ifdef LIBNET_PLATFORM_LINUX
 		struct timeval tv;
 		tv.tv_sec = timeout / 1000;
 		tv.tv_usec = timeout % 1000;
 		return (setsockopt(this->sockfd, SOL_SOCKET, SO_SNDTIMEO, &tv, sizeof(tv)) == 0);
-		#elif defined LIBNET_PLATFORM_WINDOWS
+#elif defined LIBNET_PLATFORM_WINDOWS
 		int time = timeout;
 		return (setsockopt(this->sockfd, SOL_SOCKET, SO_SNDTIMEO, reinterpret_cast<const char*>(const_cast<const int*>(&time)), sizeof(time)) == 0);
-		#else
-			#error Platform not supported
-		#endif
+#else
+#error Platform not supported
+#endif
 	}
 
 }
