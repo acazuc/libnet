@@ -21,7 +21,6 @@ namespace libnet
 
 	public:
 		Packet(uint16_t id);
-		~Packet();
 		void writeBytes(const void *src, size_t len);
 		void writeBool(bool value);
 		void writeInt8(int8_t value);
