@@ -10,7 +10,7 @@ namespace libnet
 	: position(0)
 	, id(id)
 	{
-		this->data.resize(64);
+		this->data.reserve(64);
 	}
 
 	uint16_t Packet::b_ntohs(uint16_t value)
