@@ -75,6 +75,14 @@ namespace libnet
 			j += this->cryptBox[i] + (reinterpret_cast<const uint8_t*>(key))[i % keylen];
 			std::swap(this->cryptBox[i], this->cryptBox[j]);
 		}
+		//Little bit better security
+		uint64_t max = 1024 + this->cryptBox[0] + this->cryptBox[1];
+		for (uint16_t i = 0; i < max; ++i)
+		{
+			++this->cryptPos1;
+			this->cryptPos2 += this->cryptBox[this->cryptPos1];
+			std::swap(this->cryptBox[this->cryptPos1], this->cryptBox[this->cryptPos2]);
+		}
 		return (true);
 	}
 
