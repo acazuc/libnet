@@ -18,13 +18,10 @@ namespace libnet
 			std::queue<Packet*> packets;
 			Packet *currentPacket;
 			Socket &socket;
-			Buffer rCryptedBuffer;
-			Buffer wCryptedBuffer;
 			Buffer rBuffer;
 			Buffer wBuffer;
 			uint32_t packetStart;
 			bool crypted;
-			inline void checkAutoSend() {if (wBuffer.getPosition() >= wBuffer.getLimit() * 3 / 4){send();}};
 
 		public:
 			Connection(Socket &socket);
@@ -61,11 +58,13 @@ namespace libnet
 			double readDouble();
 			void writeString(std::string &value);
 			std::string readString();
+			inline std::queue<Packet*> &getPackets() {return (this->packets);};
 			inline bool setBlocking(bool blocking) {return (this->socket.setBlocking(blocking));};
 			inline bool setNagle(bool nagle) {return (this->socket.setNagle(nagle));};
 			inline Socket &getSocket() {return (this->socket);};
 			inline Buffer &getRBuffer() {return (this->rBuffer);};
 			inline Buffer &getWBuffer() {return (this->wBuffer);};
+			inline bool isCrypted() {return (this->crypted);};
 
 	};
 

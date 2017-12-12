@@ -222,6 +222,8 @@ clear:
 			readed = -2;
 			goto clear;
 		}
+		if (buffer.isCrypted())
+			buffer.crypt(buffer.getPosition(), readed);
 		buffer.setPosition(buffer.getPosition() + readed);
 clear:
 		buffer.flip();

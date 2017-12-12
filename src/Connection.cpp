@@ -6,8 +6,6 @@ namespace libnet
 	Connection::Connection(Socket &socket)
 	: currentPacket(NULL)
 	, socket(socket)
-	, rCryptedBuffer(1)
-	, wCryptedBuffer(1)
 	, rBuffer(1024)
 	, wBuffer(1024)
 	, crypted(false)
@@ -49,9 +47,9 @@ namespace libnet
 
 	bool Connection::initCrypt(const void *key, size_t keylen)
 	{
-		if (!this->rCryptedBuffer.initCrypt(key, keylen))
+		if (!this->rBuffer.initCrypt(key, keylen))
 			return (false);
-		if (!this->wCryptedBuffer.initCrypt(key, keylen))
+		if (!this->wBuffer.initCrypt(key, keylen))
 			return (false);
 		this->crypted = true;
 		return (true);
@@ -60,8 +58,8 @@ namespace libnet
 	void Connection::disableCrypt()
 	{
 		this->crypted = false;
-		this->rCryptedBuffer.disableCrypt();
-		this->wCryptedBuffer.disableCrypt();
+		this->rBuffer.disableCrypt();
+		this->wBuffer.disableCrypt();
 	}
 
 	int32_t Connection::read()

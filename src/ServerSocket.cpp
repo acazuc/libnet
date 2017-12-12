@@ -40,13 +40,13 @@ namespace libnet
 	{
 		if (!this->opened)
 			return (false);
-		#ifdef LIBNET_PLATFORM_WINDOWS
-			::shutdown(this->sockfd, SD_BOTH);
-		#elif defined LIBNET_PLATFORM_LINUX
-			::shutdown(this->sockfd, SHUT_RDWR);
-		#else
-			#error Platform not supported
-		#endif
+#ifdef LIBNET_PLATFORM_WINDOWS
+		::shutdown(this->sockfd, SD_BOTH);
+#elif defined LIBNET_PLATFORM_LINUX
+		::shutdown(this->sockfd, SHUT_RDWR);
+#else
+#error Platform not supported
+#endif
 		return (true);
 	}
 
@@ -86,20 +86,20 @@ namespace libnet
 
 	bool ServerSocket::setBlocking(bool blocking)
 	{
-		#ifdef LIBNET_PLATFORM_WINDOWS
-			u_long mode = blocking ? 0 : 1;
-			return (ioctlsocket(this->sockfd, FIONBIO, &mode) == 0);
-		#elif defined LIBNET_PLATFORM_LINUX
-			if (!this->opened)
-				return (false);
-			int flags = fcntl(this->sockfd, F_GETFL, 0);
-			if (flags == -1)
-				return (false);
-			flags = blocking ? (flags & ~O_NONBLOCK) : (flags | O_NONBLOCK);
-			return (fcntl(this->sockfd, F_SETFL, flags) == 0);
-		#else
-			#error Platform not supported
-		#endif
+#ifdef LIBNET_PLATFORM_WINDOWS
+		u_long mode = blocking ? 0 : 1;
+		return (ioctlsocket(this->sockfd, FIONBIO, &mode) == 0);
+#elif defined LIBNET_PLATFORM_LINUX
+		if (!this->opened)
+			return (false);
+		int flags = fcntl(this->sockfd, F_GETFL, 0);
+		if (flags == -1)
+			return (false);
+		flags = blocking ? (flags & ~O_NONBLOCK) : (flags | O_NONBLOCK);
+		return (fcntl(this->sockfd, F_SETFL, flags) == 0);
+#else
+#error Platform not supported
+#endif
 	}
 
 }

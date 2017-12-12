@@ -21,13 +21,11 @@ namespace libnet
 			uint8_t cryptPos1;
 			uint8_t cryptPos2;
 			bool crypted;
-			uint16_t b_htons(uint16_t value);
-			uint32_t b_htonl(uint32_t value);
-			uint64_t b_htonll(uint64_t value);
 			uint16_t b_ntohs(uint16_t value);
 			uint32_t b_ntohl(uint32_t value);
 			uint64_t b_ntohll(uint64_t value);
 			void crypt(uint32_t position, uint32_t length);
+			void crypt2(uint32_t position, uint32_t length);
 
 		public:
 			Buffer(uint64_t capacity);
@@ -70,6 +68,7 @@ namespace libnet
 			void setLimit(uint32_t limit);
 			inline uint32_t getLimit() {return (this->limit);};
 			inline uint8_t *getDatas() {return (this->datas);};
+			inline bool isCrypted() {return (this->crypted);};
 
 	};
 }
