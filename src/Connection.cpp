@@ -69,16 +69,15 @@ namespace libnet
 
 	int32_t Connection::send()
 	{
-		if (this->packets.size())
+		while (this->packets.size())
 		{
 			Packet *packet = this->packets.front();
 			this->packets.pop();
-			if (this->wBuffer.getRemaining() >= packet->getSize() + 6)
-			{
-				this->wBuffer.writeUInt32(packet->getSize() + 2);
-				this->wBuffer.writeUInt16(packet->getId());
-				this->wBuffer.writeBytes(packet->getData(), packet->getSize());
-			}
+			if (this->wBuffer.getRemaining() < packet->getSize() + 6)
+				break;
+			this->wBuffer.writeUInt32(packet->getSize() + 2);
+			this->wBuffer.writeUInt16(packet->getId());
+			this->wBuffer.writeBytes(packet->getData(), packet->getSize());
 		}
 		return (this->socket.send(this->wBuffer));
 	}
