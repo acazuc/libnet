@@ -63,6 +63,7 @@ namespace libnet
 	{
 		if (keylen == 0)
 			return (false);
+		delete (this->cryptBox);
 		this->cryptBox = new uint8_t[256];
 		this->crypted = true;
 		this->cryptPos1 = 0;
@@ -89,6 +90,7 @@ namespace libnet
 	void Buffer::disableCrypt()
 	{
 		delete[] (this->cryptBox);
+		this->cryptBox = NULL;
 		this->crypted = false;
 	}
 
