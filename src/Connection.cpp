@@ -28,20 +28,35 @@ namespace libnet
 		this->currentPacket = new Packet(packet);
 	}
 
+	bool Connection::checkWritePacket(Packet *packet)
+	{
+		if (!packet->isHeaderSent())
+		{
+			if (this->wBuffer.getRemaining() < 6)
+				return (false);
+			this->wBuffer.writeUInt32(packet->getSize() + 2);
+			this->wBuffer.writeUInt16(packet->getId());
+			packet->setHeaderSent(true);
+		}
+		if (this->wBuffer.getRemaining() < packet->getSize() - packet->getPosition())
+		{
+			this->wBuffer.writeBytes(packet->getData() + packet->getPosition(), this->wBuffer.getRemaining());
+			packet->setPosition(packet->getPosition() + this->wBuffer.getRemaining());
+			return (false);
+		}
+		this->wBuffer.writeBytes(packet->getData() + packet->getPosition(), packet->getSize() - packet->getPosition());
+		packet->setPosition(packet->getSize());
+		return (true);
+	}
+
 	void Connection::endPacket()
 	{
 		if (!this->currentPacket)
 			return;
-		if (this->wBuffer.getRemaining() < this->currentPacket->getSize() + 6)
-		{
+		if (checkWritePacket(this->currentPacket))
+			delete (this->currentPacket);
+		else
 			this->packets.push(this->currentPacket);
-			this->currentPacket = NULL;
-			return;
-		}
-		this->wBuffer.writeUInt32(this->currentPacket->getSize() + 2);
-		this->wBuffer.writeUInt16(this->currentPacket->getId());
-		this->wBuffer.writeBytes(this->currentPacket->getData(), this->currentPacket->getSize());
-		delete (this->currentPacket);
 		this->currentPacket = NULL;
 	}
 
@@ -72,12 +87,10 @@ namespace libnet
 		while (this->packets.size())
 		{
 			Packet *packet = this->packets.front();
-			this->packets.pop();
-			if (this->wBuffer.getRemaining() < packet->getSize() + 6)
+			if (!checkWritePacket(packet))
 				break;
-			this->wBuffer.writeUInt32(packet->getSize() + 2);
-			this->wBuffer.writeUInt16(packet->getId());
-			this->wBuffer.writeBytes(packet->getData(), packet->getSize());
+			this->packets.pop();
+			delete (packet);
 		}
 		return (this->socket.send(this->wBuffer));
 	}

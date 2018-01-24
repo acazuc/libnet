@@ -9,8 +9,9 @@ namespace libnet
 	Packet::Packet(uint16_t id)
 	: position(0)
 	, id(id)
+	, headerSent(false)
 	{
-		this->data.reserve(64);
+		this->data.reserve(256);
 	}
 
 	uint16_t Packet::b_ntohs(uint16_t value)
@@ -40,9 +41,9 @@ namespace libnet
 
 	void Packet::writeBytes(const void *src, size_t len)
 	{
+		size_t pos = this->data.size();
 		this->data.resize(this->data.size() + len);
-		std::memcpy(this->data.data() + this->position, src, len);
-		this->position += len;
+		std::memcpy(this->data.data() + pos, src, len);
 	}
 
 	void Packet::writeBool(bool value)

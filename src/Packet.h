@@ -15,6 +15,7 @@ namespace libnet
 		std::vector<uint8_t> data;
 		uint32_t position;
 		uint16_t id;
+		bool headerSent;
 		uint16_t b_ntohs(uint16_t value);
 		uint32_t b_ntohl(uint32_t value);
 		uint64_t b_ntohll(uint64_t value);
@@ -50,7 +51,11 @@ namespace libnet
 		void resize(uint64_t len);
 		inline uint32_t getSize() {return (this->data.size());};
 		inline const uint8_t *getData() {return (this->data.data());};
+		inline void setPosition(uint32_t position) {this->position = position;};
+		inline uint32_t getPosition() {return (this->position);};
 		inline uint16_t getId() {return (this->id);};
+		inline void setHeaderSent(bool headerSent) {this->headerSent = headerSent;};
+		inline bool isHeaderSent() {return (this->headerSent);};
 
 	};
 

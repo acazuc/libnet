@@ -22,6 +22,7 @@ namespace libnet
 			Buffer wBuffer;
 			uint32_t packetStart;
 			bool crypted;
+			bool checkWritePacket(Packet *packet);
 
 		public:
 			Connection(Socket &socket);
