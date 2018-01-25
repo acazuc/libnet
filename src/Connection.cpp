@@ -8,7 +8,6 @@ namespace libnet
 	, socket(socket)
 	, rBuffer(1024)
 	, wBuffer(1024)
-	, crypted(false)
 	{
 		rBuffer.flip();
 	}
@@ -38,10 +37,12 @@ namespace libnet
 			this->wBuffer.writeUInt16(packet->getId());
 			packet->setHeaderSent(true);
 		}
-		if (this->wBuffer.getRemaining() < packet->getSize() - packet->getPosition())
+		if (this->wBuffer.getRemaining() > 0 && this->wBuffer.getRemaining() < packet->getSize() - packet->getPosition())
 		{
-			this->wBuffer.writeBytes(packet->getData() + packet->getPosition(), this->wBuffer.getRemaining());
-			packet->setPosition(packet->getPosition() + this->wBuffer.getRemaining());
+			return (false);
+			int32_t toWrite = this->wBuffer.getRemaining();
+			this->wBuffer.writeBytes(packet->getData() + packet->getPosition(), toWrite);
+			packet->setPosition(packet->getPosition() + toWrite);
 			return (false);
 		}
 		this->wBuffer.writeBytes(packet->getData() + packet->getPosition(), packet->getSize() - packet->getPosition());
@@ -53,10 +54,17 @@ namespace libnet
 	{
 		if (!this->currentPacket)
 			return;
-		if (checkWritePacket(this->currentPacket))
-			delete (this->currentPacket);
+		if (!this->packets.size())
+		{
+			if (checkWritePacket(this->currentPacket))
+				delete (this->currentPacket);
+			else
+				this->packets.push(this->currentPacket);
+		}
 		else
+		{
 			this->packets.push(this->currentPacket);
+		}
 		this->currentPacket = NULL;
 	}
 
@@ -66,13 +74,11 @@ namespace libnet
 			return (false);
 		if (!this->wBuffer.initCrypt(key, keylen))
 			return (false);
-		this->crypted = true;
 		return (true);
 	}
 
 	void Connection::disableCrypt()
 	{
-		this->crypted = false;
 		this->rBuffer.disableCrypt();
 		this->wBuffer.disableCrypt();
 	}

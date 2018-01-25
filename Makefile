@@ -12,7 +12,7 @@ RANLIB = gcc-ranlib
 
 RANLIBFLAGS =
 
-CLFAGS = -g -Wall -Wextra -Werror -Ofast -pipe -mtune=generic -fuse-linker-plugin -flto=8
+CLFAGS = -g -Wall -Wextra -O3 -pipe -mtune=generic -fuse-linker-plugin -flto
 
 INCLUDES_PATH = -I src
 INCLUDES_PATH+= -I lib

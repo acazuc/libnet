@@ -7,17 +7,19 @@ namespace libnet
 	Socket::Socket(SOCKET sockfd, SOCKADDR_IN cli_addr)
 	: cli_addr(cli_addr)
 	, sockfd(sockfd)
+	, waitingConnection(false)
+	, connected(true)
+	, opened(true)
 	{
-		this->waitingConnection = false;
-		this->connected = true;
-		this->opened = true;
+		//Empty
 	}
 
 	Socket::Socket()
+	: waitingConnection(false)
+	, connected(false)
+	, opened(false)
 	{
-		this->waitingConnection = false;
-		this->connected = false;
-		this->opened = false;
+		//Empty
 	}
 
 	Socket::~Socket()
@@ -132,18 +134,14 @@ namespace libnet
 
 	int32_t Socket::send(Buffer &buffer)
 	{
-		int32_t written;
-
+		int32_t written = -2;
 		if (!this->connected)
 			return (-1);
 		if (buffer.getPosition() == 0)
 			return (-2);
 		buffer.flip();
 		if (buffer.getRemaining() == 0)
-		{
-			written = -2;
 			goto clear;
-		}
 		if ((written = ::send(this->sockfd, reinterpret_cast<const char*>(const_cast<const uint8_t*>(buffer.getDatas())), buffer.getRemaining(), 0)) == SOCKET_ERROR)
 		{
 #ifdef LIBNET_PLATFORM_WINDOWS
@@ -182,8 +180,7 @@ clear:
 
 	int32_t Socket::read(Buffer &buffer)
 	{
-		int32_t readed;
-
+		int32_t readed = 0;
 		if (!this->connected)
 			return (-1);
 		if (buffer.getRemaining() > 0)
@@ -198,10 +195,7 @@ clear:
 			buffer.clear();
 		}
 		if (buffer.getRemaining() == 0)
-		{
-			readed = 0;
 			goto clear;
-		}
 		if ((readed = ::recv(this->sockfd, reinterpret_cast<char*>(buffer.getDatas() + buffer.getPosition()), buffer.getRemaining(), 0)) == SOCKET_ERROR)
 		{
 #ifdef LIBNET_PLATFORM_WINDOWS
@@ -232,6 +226,8 @@ clear:
 
 	bool Socket::setNagle(bool active)
 	{
+		if (!this->opened)
+			return (false);
 		int flag = active ? 1 : 0;
 		return (setsockopt(this->sockfd, IPPROTO_TCP, TCP_NODELAY, reinterpret_cast<const char*>(const_cast<const int*>(&flag)), sizeof(flag)) == 0);
 	}

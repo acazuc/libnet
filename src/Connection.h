@@ -21,7 +21,6 @@ namespace libnet
 			Buffer rBuffer;
 			Buffer wBuffer;
 			uint32_t packetStart;
-			bool crypted;
 			bool checkWritePacket(Packet *packet);
 
 		public:
@@ -65,7 +64,6 @@ namespace libnet
 			inline Socket &getSocket() {return (this->socket);};
 			inline Buffer &getRBuffer() {return (this->rBuffer);};
 			inline Buffer &getWBuffer() {return (this->wBuffer);};
-			inline bool isCrypted() {return (this->crypted);};
 
 	};
 

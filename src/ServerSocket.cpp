@@ -5,9 +5,10 @@ namespace libnet
 {
 
 	ServerSocket::ServerSocket()
+	: opened(false)
+	, bound(false)
 	{
-		this->bound = false;
-		this->opened = false;
+		//Empty
 	}
 
 	ServerSocket::~ServerSocket()
