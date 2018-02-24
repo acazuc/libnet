@@ -24,27 +24,18 @@ namespace libnet
 
 	uint16_t Buffer::b_ntohs(uint16_t value)
 	{
-		const uint16_t highPart = (value >> 8) & 0xFF;
-		const uint16_t lowPart = value & 0xFF;
-		return ((lowPart << 8) | highPart);
+		return (((value >> 8) & 0xff) | (value & 0xff));
 	}
 
 	uint32_t Buffer::b_ntohl(uint32_t value)
 	{
-		const uint16_t highVal = (value >> 16) & 0xFFFF;
-		const uint16_t lowVal = value & 0xFFFF;
-		const uint32_t highPart = b_ntohs(*reinterpret_cast<const uint16_t*>(&highVal));
-		const uint32_t lowPart = b_ntohs(*reinterpret_cast<const uint16_t*>(&lowVal));
-		return ((lowPart << 16) | highPart);
+		return (((value >> 24) & 0xff) | ((value >> 8) & 0xff00) | ((value & 0xff00) << 8) | ((value & 0xff) << 24));
 	}
 
 	uint64_t Buffer::b_ntohll(uint64_t value)
 	{
-		const uint32_t highVal = (value >> 32) & 0xFFFFFFFF;
-		const uint32_t lowVal = value & 0xFFFFFFFF;
-		const uint64_t highPart = b_ntohl(*reinterpret_cast<const uint32_t*>(&highVal));
-		const uint64_t lowPart = b_ntohl(*reinterpret_cast<const uint32_t*>(&lowVal));
-		return ((lowPart << 32) | highPart);
+		return (((value >> 56) & 0xff) | ((value >> 40) & 0xff00) | ((value >> 24) & 0xff0000) | ((value >> 8) & 0xff000000)
+				| ((value & 0xff000000) << 8) | ((value & 0xff0000) << 24) | ((value & 0xff00) << 40) | ((value & 0xff) << 56));
 	}
 
 	void Buffer::crypt(uint32_t position, uint32_t length)
