@@ -24,7 +24,7 @@ namespace libnet
 
 	uint16_t Buffer::b_ntohs(uint16_t value)
 	{
-		return (((value >> 8) & 0xff) | (value & 0xff));
+		return (((value & 0xff00) >> 8) | ((value & 0xff) << 8));
 	}
 
 	uint32_t Buffer::b_ntohl(uint32_t value)

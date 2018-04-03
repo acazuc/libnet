@@ -1,4 +1,5 @@
 #include "Connection.h"
+#include <iostream>
 
 namespace libnet
 {
@@ -37,7 +38,9 @@ namespace libnet
 			this->wBuffer.writeUInt16(packet->getId());
 			packet->setHeaderSent(true);
 		}
-		if (this->wBuffer.getRemaining() > 0 && this->wBuffer.getRemaining() < packet->getSize() - packet->getPosition())
+		if (!this->wBuffer.getRemaining())
+			return (false);
+		if (this->wBuffer.getRemaining() < packet->getSize() - packet->getPosition())
 		{
 			return (false);
 			int32_t toWrite = this->wBuffer.getRemaining();
