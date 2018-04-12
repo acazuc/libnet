@@ -1,8 +1,8 @@
 NAME = libnet.a
 
-CC = g++ -std=c++14
+CC = g++
 
-ARCH = -m64
+ARCH =
 
 AR = gcc-ar
 
@@ -12,7 +12,7 @@ RANLIB = gcc-ranlib
 
 RANLIBFLAGS =
 
-CLFAGS = -g -Wall -Wextra -O3 -pipe -mtune=generic -fuse-linker-plugin -flto
+CLFAGS = -std=c++14 -g -Wall -Wextra -O3 -pipe
 
 INCLUDES_PATH = -I src
 INCLUDES_PATH+= -I lib
@@ -20,11 +20,11 @@ INCLUDES_PATH+= -I lib
 SRCS_PATH = src/
 
 SRCS_NAME = Buffer.cpp \
-		ServerSocket.cpp \
-		Socket.cpp \
-		Connection.cpp \
-		Packet.cpp \
-		EventsListener.cpp \
+	    ServerSocket.cpp \
+	    Socket.cpp \
+	    Connection.cpp \
+	    Packet.cpp \
+	    EventsListener.cpp \
 
 SRCS = $(addprefix $(SRCS_PATH), $(SRCS_NAME))
 
