@@ -3,6 +3,7 @@
 
 # include <cstdint>
 # include <string>
+# include <vector>
 
 namespace libnet
 {
@@ -13,11 +14,10 @@ namespace libnet
 		friend class Socket;
 
 		private:
+			std::vector<uint8_t> cryptBox;
+			std::vector<uint8_t> data;
 			uint32_t position;
-			uint32_t capacity;
 			uint32_t limit;
-			uint8_t *cryptBox;
-			uint8_t *datas;
 			uint8_t cryptPos1;
 			uint8_t cryptPos2;
 			bool crypted;
@@ -29,7 +29,6 @@ namespace libnet
 
 		public:
 			Buffer(uint64_t capacity);
-			~Buffer();
 			bool initCrypt(const void *key, size_t keylen);
 			void disableCrypt();
 			void writeBytes(const void *src, size_t len);
@@ -61,13 +60,12 @@ namespace libnet
 			void resize(uint64_t len);
 			void clear();
 			void flip();
+			inline std::vector<uint8_t> &getData() {return (this->data);};
 			inline uint32_t getRemaining() {return (this->limit - this->position);};
 			void setPosition(uint32_t position);
 			inline uint32_t getPosition() {return (this->position);};
-			inline uint32_t getCapacity() {return (this->capacity);};
 			void setLimit(uint32_t limit);
 			inline uint32_t getLimit() {return (this->limit);};
-			inline uint8_t *getDatas() {return (this->datas);};
 			inline bool isCrypted() {return (this->crypted);};
 
 	};

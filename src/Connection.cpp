@@ -1,5 +1,4 @@
 #include "Connection.h"
-#include <iostream>
 
 namespace libnet
 {
@@ -28,31 +27,6 @@ namespace libnet
 		this->currentPacket = new Packet(packet);
 	}
 
-	bool Connection::checkWritePacket(Packet *packet)
-	{
-		if (!packet->isHeaderSent())
-		{
-			if (this->wBuffer.getRemaining() < 6)
-				return (false);
-			this->wBuffer.writeUInt32(packet->getSize() + 2);
-			this->wBuffer.writeUInt16(packet->getId());
-			packet->setHeaderSent(true);
-		}
-		if (!this->wBuffer.getRemaining())
-			return (false);
-		if (this->wBuffer.getRemaining() < packet->getSize() - packet->getPosition())
-		{
-			return (false);
-			int32_t toWrite = this->wBuffer.getRemaining();
-			this->wBuffer.writeBytes(packet->getData() + packet->getPosition(), toWrite);
-			packet->setPosition(packet->getPosition() + toWrite);
-			return (false);
-		}
-		this->wBuffer.writeBytes(packet->getData() + packet->getPosition(), packet->getSize() - packet->getPosition());
-		packet->setPosition(packet->getSize());
-		return (true);
-	}
-
 	void Connection::endPacket()
 	{
 		if (!this->currentPacket)
@@ -71,6 +45,30 @@ namespace libnet
 		this->currentPacket = NULL;
 	}
 
+	bool Connection::checkWritePacket(Packet *packet)
+	{
+		if (!this->wBuffer.getRemaining())
+			return (false);
+		if (!packet->isHeaderSent())
+		{
+			if (this->wBuffer.getRemaining() < 6)
+				return (false);
+			this->wBuffer.writeUInt32(packet->getData().size() + 2);
+			this->wBuffer.writeUInt16(packet->getId());
+			packet->setHeaderSent(true);
+		}
+		if (this->wBuffer.getRemaining() < packet->getRemaining())
+		{
+			int32_t remaining = this->wBuffer.getRemaining();
+			this->wBuffer.writeBytes(packet->getData().data() + packet->getPosition(), remaining);
+			packet->setPosition(packet->getPosition() + remaining);
+			return (false);
+		}
+		this->wBuffer.writeBytes(packet->getData().data() + packet->getPosition(), packet->getRemaining());
+		packet->setPosition(packet->getData().size());
+		return (true);
+	}
+
 	bool Connection::initCrypt(const void *key, size_t keylen)
 	{
 		if (!this->rBuffer.initCrypt(key, keylen))
@@ -86,9 +84,9 @@ namespace libnet
 		this->wBuffer.disableCrypt();
 	}
 
-	int32_t Connection::read()
+	int32_t Connection::recv()
 	{
-		return (this->socket.read(this->rBuffer));
+		return (this->socket.recv(this->rBuffer));
 	}
 
 	int32_t Connection::send()
@@ -231,7 +229,7 @@ namespace libnet
 
 	std::string Connection::readString()
 	{
-		 return (this->rBuffer.readString());
+		return (this->rBuffer.readString());
 	}
 
 }

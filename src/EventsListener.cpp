@@ -24,7 +24,7 @@ namespace libnet
 	bool EventsListener::addSocket(Socket *socket, uint8_t mode, void *data)
 	{
 		struct epoll_event event;
-		event.events = (mode & EVENT_READ ? (int)EPOLLIN : 0) | (mode & EVENT_WRITE ? (int)EPOLLOUT : 0);
+		event.events = (mode & EVENT_READ ? (int)EPOLLIN : 0) | (mode & EVENT_WRITE ? (int)EPOLLOUT : 0) | (mode & EVENT_RDHUP ? (int)EPOLLRDHUP : 0);
 		event.data.ptr = data;
 		return (epoll_ctl(this->fd, EPOLL_CTL_ADD, socket->getSockfd(), &event) == 0);
 	}

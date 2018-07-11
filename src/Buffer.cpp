@@ -1,4 +1,6 @@
 #include "Buffer.h"
+#include "BufferUnderflowException.h"
+#include "BufferOverflowException.h"
 #include "SocketPlatform.h"
 #include <stdexcept>
 #include <cstring>
@@ -9,17 +11,10 @@ namespace libnet
 
 	Buffer::Buffer(uint64_t capacity)
 	: position(0)
-	, capacity(capacity)
 	, limit(capacity)
-	, cryptBox(NULL)
 	, crypted(false)
 	{
-		this->datas = new uint8_t[capacity];
-	}
-
-	Buffer::~Buffer()
-	{
-		delete[] (this->datas);
+		this->data.resize(capacity);
 	}
 
 	uint16_t Buffer::b_ntohs(uint16_t value)
@@ -46,7 +41,7 @@ namespace libnet
 			this->cryptPos2 += this->cryptBox[this->cryptPos1];
 			std::swap(this->cryptBox[this->cryptPos1], this->cryptBox[this->cryptPos2]);
 			uint8_t k = this->cryptBox[this->cryptPos1] + this->cryptBox[this->cryptPos2];
-			this->datas[position + i] ^= this->cryptBox[k];
+			this->data[position + i] ^= this->cryptBox[k];
 		}
 	}
 
@@ -54,8 +49,7 @@ namespace libnet
 	{
 		if (keylen == 0)
 			return (false);
-		delete (this->cryptBox);
-		this->cryptBox = new uint8_t[256];
+		this->cryptBox.resize(256);
 		this->crypted = true;
 		this->cryptPos1 = 0;
 		this->cryptPos2 = 0;
@@ -80,16 +74,14 @@ namespace libnet
 
 	void Buffer::disableCrypt()
 	{
-		delete[] (this->cryptBox);
-		this->cryptBox = NULL;
 		this->crypted = false;
 	}
 
 	void Buffer::writeBytes(const void *src, size_t len)
 	{
 		if (this->position + len > this->limit)
-			throw std::out_of_range("Buffer overflow (position = " + std::to_string(this->position) + ", limit = " + std::to_string(this->limit) + ", len = " + std::to_string(len) + ")");
-		std::memmove(&this->datas[this->position], src, len);
+			throw BufferOverflowException("position = " + std::to_string(this->position) + "; limit = " + std::to_string(this->limit) + "; len = " + std::to_string(len));
+		std::memmove(&this->data[this->position], src, len);
 		if (this->crypted)
 			crypt(this->position, len);
 		setPosition(this->position + len);
@@ -199,8 +191,8 @@ namespace libnet
 	void Buffer::readBytes(void *dst, size_t len)
 	{
 		if (this->position + len > this->limit)
-			throw std::out_of_range("Buffer underflow (position = " + std::to_string(this->position) + ", limit = " + std::to_string(this->limit) + ", len = " + std::to_string(len) + ")");
-		std::memmove(dst, &this->datas[this->position], len);
+			throw BufferUnderflowException("position = " + std::to_string(this->position) + "; limit = " + std::to_string(this->limit) + "; len = " + std::to_string(len));
+		std::memmove(dst, &this->data[this->position], len);
 		setPosition(this->position + len);
 	}
 
@@ -334,19 +326,15 @@ namespace libnet
 	{
 		if (len == 0)
 			len = 1;
-		uint8_t *newDatas = new uint8_t[len];
-		std::memmove(newDatas, this->datas, std::min(static_cast<uint32_t>(len), this->limit));
-		delete[] (this->datas);
-		if (this->limit >= len || this->limit == this->capacity)
+		std::vector<uint8_t> newData(len);
+		std::memmove(newData.data(), this->data.data(), std::min(static_cast<uint32_t>(len), this->limit));
+		this->data.swap(newData);
+		if (this->limit >= len || this->limit == this->data.size())
 		{
 			setLimit(len);
 			if (this->position > this->limit)
-			{
 				setPosition(this->limit);
-			}
 		}
-		this->capacity = len;
-		this->datas = newDatas;
 	}
 
 	void Buffer::setPosition(uint32_t position)
@@ -361,7 +349,7 @@ namespace libnet
 
 	void Buffer::clear()
 	{
-		setLimit(this->capacity);
+		setLimit(this->data.size());
 		setPosition(0);
 	}
 

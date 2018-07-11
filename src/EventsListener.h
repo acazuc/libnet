@@ -11,6 +11,7 @@
 # define EVENT_READ 1
 # define EVENT_WRITE 2
 # define EVENT_RDWR 3
+# define EVENT_RDHUP 4
 
 namespace libnet
 {

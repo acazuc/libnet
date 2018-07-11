@@ -27,8 +27,10 @@ namespace libnet
 			bool shutdown();
 			bool connect(std::string host, uint16_t port);
 			int getConnectionStatus();
+			int32_t send(const void *data, int32_t len);
 			int32_t send(Buffer &buffer);
-			int32_t read(Buffer &buffer);
+			int32_t recv(void *data, int32_t len);
+			int32_t recv(Buffer &buffer);
 			bool setNagle(bool active);
 			bool setBlocking(bool blocking);
 			bool setRecvTimeout(uint64_t timeout);

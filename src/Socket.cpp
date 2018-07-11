@@ -66,13 +66,12 @@ namespace libnet
 
 	bool Socket::connect(std::string host, uint16_t port)
 	{
-		SOCKADDR_IN serv_addr;
-		struct hostent *server;
-
 		if (!this->opened)
 			return (false);
+		struct hostent *server;
 		if (!(server = gethostbyname(host.c_str())))
 			return (false);
+		SOCKADDR_IN serv_addr;
 		std::memset(&serv_addr, 0, sizeof(serv_addr));
 		serv_addr.sin_family = AF_INET;
 		std::memcpy(&serv_addr.sin_addr.s_addr, server->h_addr, server->h_length);
@@ -132,44 +131,46 @@ namespace libnet
 		return (0);
 	}
 
-	int32_t Socket::send(Buffer &buffer)
+	int32_t Socket::send(const void *data, int32_t len)
 	{
-		int32_t written = -2;
 		if (!this->connected)
-			return (-1);
-		if (buffer.getPosition() == 0)
-			return (-2);
-		buffer.flip();
-		if (buffer.getRemaining() == 0)
-			goto clear;
-		if ((written = ::send(this->sockfd, reinterpret_cast<const char*>(const_cast<const uint8_t*>(buffer.getDatas())), buffer.getRemaining(), 0)) == SOCKET_ERROR)
+			throw std::exception();
+		if (!len)
+			return (0);
+		int32_t written = ::send(this->sockfd, reinterpret_cast<const char*>(data), len, 0);
+		if (written == SOCKET_ERROR)
 		{
 #ifdef LIBNET_PLATFORM_WINDOWS
 			if (WSAGetLastError() != WSAEWOULDBLOCK)
-			{
-				written = -1;
-				goto clear;
-			}
+				throw std::exception();
 #elif defined LIBNET_PLATFORM_LINUX
 			if (errno != EWOULDBLOCK && errno != EAGAIN)
-			{
-				written = -1;
-				goto clear;
-			}
+				throw std::exception();
 #else
 #error Platform not supported
 #endif
-			written = -2;
-			goto clear;
+			written = -1;
 		}
-		buffer.setPosition(buffer.getPosition() + written);
-clear:
-		if (buffer.getRemaining() > 0)
+		return (written);
+	}
+
+	int32_t Socket::send(Buffer &buffer)
+	{
+		buffer.flip();
+		if (!buffer.getRemaining())
 		{
-			if (buffer.getPosition() != 0)
-				std::memmove(buffer.getDatas(), buffer.getDatas() + buffer.getPosition(), buffer.getRemaining());
+			buffer.clear();
+			return (0);
+		}
+		int32_t written = send(buffer.getData().data() + buffer.getPosition(), buffer.getRemaining());
+		if (written > 0)
+			buffer.setPosition(buffer.getPosition() + written);
+		if (buffer.getRemaining())
+		{
+			if (buffer.getPosition())
+				std::memmove(buffer.getData().data(), buffer.getData().data() + buffer.getPosition(), buffer.getRemaining());
 			buffer.setPosition(buffer.getRemaining());
-			buffer.setLimit(buffer.getCapacity());
+			buffer.setLimit(buffer.getData().size());
 		}
 		else
 		{
@@ -178,48 +179,49 @@ clear:
 		return (written);
 	}
 
-	int32_t Socket::read(Buffer &buffer)
+	int32_t Socket::recv(void *data, int32_t len)
 	{
-		int32_t readed = 0;
 		if (!this->connected)
+			throw std::exception();
+		if (!len)
 			return (-1);
-		if (buffer.getRemaining() > 0)
+		int32_t readed = ::recv(this->sockfd, reinterpret_cast<char*>(data), len, 0);
+		if (readed == SOCKET_ERROR)
 		{
-			if (buffer.getPosition() != 0)
-				std::memmove(buffer.getDatas(), buffer.getDatas() + buffer.getPosition(), buffer.getRemaining());
+#ifdef LIBNET_PLATFORM_WINDOWS
+			if (WSAGetLastError() != WSAEWOULDBLOCK)
+				throw std::exception();
+#elif defined LIBNET_PLATFORM_LINUX
+			if (errno != EWOULDBLOCK && errno != EAGAIN)
+				throw std::exception();
+#else
+#error Platform not supported
+#endif
+			readed = -1;
+		}
+		return (readed);
+	}
+
+	int32_t Socket::recv(Buffer &buffer)
+	{
+		if (buffer.getRemaining())
+		{
+			if (buffer.getPosition())
+				std::memmove(buffer.getData().data(), buffer.getData().data() + buffer.getPosition(), buffer.getRemaining());
 			buffer.setPosition(buffer.getRemaining());
-			buffer.setLimit(buffer.getCapacity());
+			buffer.setLimit(buffer.getData().size());
 		}
 		else
 		{
 			buffer.clear();
 		}
-		if (buffer.getRemaining() == 0)
-			goto clear;
-		if ((readed = ::recv(this->sockfd, reinterpret_cast<char*>(buffer.getDatas() + buffer.getPosition()), buffer.getRemaining(), 0)) == SOCKET_ERROR)
+		int32_t readed = recv(buffer.getData().data() + buffer.getPosition(), buffer.getRemaining());
+		if (readed > 0)
 		{
-#ifdef LIBNET_PLATFORM_WINDOWS
-			if (WSAGetLastError() != WSAEWOULDBLOCK)
-			{
-				readed = -1;
-				goto clear;
-			}
-#elif defined LIBNET_PLATFORM_LINUX
-			if (errno != EWOULDBLOCK && errno != EAGAIN)
-			{
-				readed = -1;
-				goto clear;
-			}
-#else
-#error Platform not supported
-#endif
-			readed = -2;
-			goto clear;
+			if (buffer.isCrypted())
+				buffer.crypt(buffer.getPosition(), readed);
+			buffer.setPosition(buffer.getPosition() + readed);
 		}
-		if (buffer.isCrypted())
-			buffer.crypt(buffer.getPosition(), readed);
-		buffer.setPosition(buffer.getPosition() + readed);
-clear:
 		buffer.flip();
 		return (readed);
 	}

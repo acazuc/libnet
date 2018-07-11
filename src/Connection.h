@@ -30,7 +30,7 @@ namespace libnet
 			void endPacket();
 			bool initCrypt(const void *key, size_t keylen);
 			void disableCrypt();
-			int32_t read();
+			int32_t recv();
 			int32_t send();
 			void writeBytes(const void *data, size_t len);
 			void readBytes(void *data, size_t len);

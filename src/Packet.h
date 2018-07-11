@@ -49,10 +49,10 @@ namespace libnet
 		double readDouble();
 		std::string readString();
 		void resize(uint64_t len);
-		inline uint32_t getSize() {return (this->data.size());};
-		inline const uint8_t *getData() {return (this->data.data());};
+		inline std::vector<uint8_t> &getData() {return (this->data);};
 		inline void setPosition(uint32_t position) {this->position = position;};
 		inline uint32_t getPosition() {return (this->position);};
+		inline uint32_t getRemaining() {return (this->data.size() - this->position);};
 		inline uint16_t getId() {return (this->id);};
 		inline void setHeaderSent(bool headerSent) {this->headerSent = headerSent;};
 		inline bool isHeaderSent() {return (this->headerSent);};

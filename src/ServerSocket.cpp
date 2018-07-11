@@ -14,14 +14,14 @@ namespace libnet
 	ServerSocket::~ServerSocket()
 	{
 		if (this->opened)
-			closesocket(sockfd);
+			closesocket(this->sockfd);
 	}
 
 	bool ServerSocket::open()
 	{
 		if (this->opened)
 			return (false);
-		if ((sockfd = ::socket(AF_INET, SOCK_STREAM, 0)) == INVALID_SOCKET)
+		if ((this->sockfd = ::socket(AF_INET, SOCK_STREAM, 0)) == INVALID_SOCKET)
 			return (false);
 		this->opened = true;
 		return (true);
@@ -59,9 +59,9 @@ namespace libnet
 		server_addr.sin_family = AF_INET;
 		server_addr.sin_addr.s_addr = INADDR_ANY;
 		server_addr.sin_port = htons(port);
-		if (::bind(sockfd, (struct sockaddr*)&server_addr, sizeof(server_addr)) == SOCKET_ERROR)
+		if (::bind(this->sockfd, (struct sockaddr*)&server_addr, sizeof(server_addr)) == SOCKET_ERROR)
 			return (false);
-		listen(sockfd, 255);
+		listen(this->sockfd, 255);
 		this->bound = true;
 		return (true);
 	}
