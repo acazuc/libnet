@@ -60,13 +60,13 @@ namespace libnet
 			void resize(uint64_t len);
 			void clear();
 			void flip();
-			inline std::vector<uint8_t> &getData() {return (this->data);};
-			inline uint32_t getRemaining() {return (this->limit - this->position);};
+			inline std::vector<uint8_t> &getData() {return this->data;};
+			inline uint32_t getRemaining() {return this->limit - this->position;};
 			void setPosition(uint32_t position);
-			inline uint32_t getPosition() {return (this->position);};
+			inline uint32_t getPosition() {return this->position;};
 			void setLimit(uint32_t limit);
-			inline uint32_t getLimit() {return (this->limit);};
-			inline bool isCrypted() {return (this->crypted);};
+			inline uint32_t getLimit() {return this->limit;};
+			inline bool isCrypted() {return this->crypted;};
 
 	};
 }

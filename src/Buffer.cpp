@@ -19,17 +19,17 @@ namespace libnet
 
 	uint16_t Buffer::b_ntohs(uint16_t value)
 	{
-		return (((value & 0xff00) >> 8) | ((value & 0xff) << 8));
+		return ((value & 0xff00) >> 8) | ((value & 0xff) << 8);
 	}
 
 	uint32_t Buffer::b_ntohl(uint32_t value)
 	{
-		return (((value >> 24) & 0xff) | ((value >> 8) & 0xff00) | ((value & 0xff00) << 8) | ((value & 0xff) << 24));
+		return ((value >> 24) & 0xff) | ((value >> 8) & 0xff00) | ((value & 0xff00) << 8) | ((value & 0xff) << 24);
 	}
 
 	uint64_t Buffer::b_ntohll(uint64_t value)
 	{
-		return (((value >> 56) & 0xff) | ((value >> 40) & 0xff00) | ((value >> 24) & 0xff0000) | ((value >> 8) & 0xff000000)
+		return ((value >> 56) & 0xff) | ((value >> 40) & 0xff00) | ((value >> 24) & 0xff0000) | ((value >> 8) & 0xff000000
 				| ((value & 0xff000000) << 8) | ((value & 0xff0000) << 24) | ((value & 0xff00) << 40) | ((value & 0xff) << 56));
 	}
 
@@ -48,7 +48,7 @@ namespace libnet
 	bool Buffer::initCrypt(const void *key, size_t keylen)
 	{
 		if (keylen == 0)
-			return (false);
+			return false;
 		this->cryptBox.resize(256);
 		this->crypted = true;
 		this->cryptPos1 = 0;
@@ -69,7 +69,7 @@ namespace libnet
 			this->cryptPos2 += this->cryptBox[this->cryptPos1];
 			std::swap(this->cryptBox[this->cryptPos1], this->cryptBox[this->cryptPos2]);
 		}
-		return (true);
+		return true;
 	}
 
 	void Buffer::disableCrypt()
@@ -198,21 +198,21 @@ namespace libnet
 
 	bool Buffer::readBool()
 	{
-		return (readUInt8() != 0);
+		return readUInt8() != 0;
 	}
 
 	int8_t Buffer::readInt8()
 	{
 		int8_t value;
 		readBytes(&value, 1);
-		return (value);
+		return value;
 	}
 
 	uint8_t Buffer::readUInt8()
 	{
 		uint8_t value;
 		readBytes(&value, 1);
-		return (value);
+		return value;
 	}
 
 	int16_t Buffer::readInt16()
@@ -221,9 +221,9 @@ namespace libnet
 		readBytes(&value, 2);
 #if __BYTE_ORDER == __LITTLE_ENDIAN
 		uint16_t tmp = b_ntohs(*reinterpret_cast<uint16_t*>(&value));
-		return (*reinterpret_cast<int16_t*>(&tmp));
+		return *reinterpret_cast<int16_t*>(&tmp);
 #else
-		return (value);
+		return value;
 #endif
 	}
 
@@ -232,9 +232,9 @@ namespace libnet
 		uint16_t value;
 		readBytes(&value, 2);
 #if __BYTE_ORDER == __LITTLE_ENDIAN
-		return (b_ntohs(value));
+		return b_ntohs(value);
 #else
-		return (value);
+		return value;
 #endif
 	}
 
@@ -244,9 +244,9 @@ namespace libnet
 		readBytes(&value, 4);
 #if __BYTE_ORDER == __LITTLE_ENDIAN
 		uint32_t tmp = b_ntohl(*reinterpret_cast<uint32_t*>(&value));
-		return (*reinterpret_cast<int32_t*>(&tmp));
+		return *reinterpret_cast<int32_t*>(&tmp);
 #else
-		return (value);
+		return value;
 #endif
 	}
 
@@ -255,9 +255,9 @@ namespace libnet
 		uint32_t value;
 		readBytes(&value, 4);
 #if __BYTE_ORDER == __LITTLE_ENDIAN
-		return (b_ntohl(value));
+		return b_ntohl(value);
 #else
-		return (value);
+		return value;
 #endif
 	}
 
@@ -267,9 +267,9 @@ namespace libnet
 		readBytes(&value, 8);
 #if __BYTE_ORDER == __LITTLE_ENDIAN
 		uint64_t tmp = b_ntohll(*reinterpret_cast<uint64_t*>(&value));
-		return (*reinterpret_cast<int64_t*>(&tmp));
+		return *reinterpret_cast<int64_t*>(&tmp);
 #else
-		return (value);
+		return value;
 #endif
 	}
 
@@ -278,9 +278,9 @@ namespace libnet
 		uint64_t value;
 		readBytes(&value, 8);
 #if __BYTE_ORDER == __LITTLE_ENDIAN
-		return (b_ntohll(value));
+		return b_ntohll(value);
 #else
-		return (value);
+		return value;
 #endif
 	}
 
@@ -290,9 +290,9 @@ namespace libnet
 		readBytes(&value, 4);
 #if __BYTE_ORDER == __LITTLE_ENDIAN
 		uint32_t tmp = b_ntohl(*reinterpret_cast<uint32_t*>(&value));
-		return (*reinterpret_cast<float*>(&tmp));
+		return *reinterpret_cast<float*>(&tmp);
 #else
-		return (value);
+		return value;
 #endif
 	}
 
@@ -302,9 +302,9 @@ namespace libnet
 		readBytes(&value, 8);
 #if __BYTE_ORDER == __LITTLE_ENDIAN
 		uint64_t tmp = b_ntohl(*reinterpret_cast<uint64_t*>(&value));
-		return (*reinterpret_cast<double*>(&tmp));
+		return *reinterpret_cast<double*>(&tmp);
 #else
-		return (value);
+		return value;
 #endif
 	}
 
@@ -319,7 +319,7 @@ namespace libnet
 			utf8::replace_invalid(str.begin(), str.end(), back_inserter(tmp));
 			str = tmp;
 		}
-		return (str);
+		return str;
 	}
 
 	void Buffer::resize(uint64_t len)

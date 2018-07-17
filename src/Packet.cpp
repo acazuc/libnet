@@ -18,7 +18,7 @@ namespace libnet
 	{
 		const uint16_t highPart = (value >> 8) & 0xFF;
 		const uint16_t lowPart = value & 0xFF;
-		return ((lowPart << 8) | highPart);
+		return (lowPart << 8) | highPart;
 	}
 
 	uint32_t Packet::b_ntohl(uint32_t value)
@@ -27,7 +27,7 @@ namespace libnet
 		const uint16_t lowVal = value & 0xFFFF;
 		const uint32_t highPart = b_ntohs(highVal);
 		const uint32_t lowPart = b_ntohs(lowVal);
-		return ((lowPart << 16) | highPart);
+		return (lowPart << 16) | highPart;
 	}
 
 	uint64_t Packet::b_ntohll(uint64_t value)
@@ -36,7 +36,7 @@ namespace libnet
 		const uint32_t lowVal = value & 0xFFFFFFFF;
 		const uint64_t highPart = b_ntohl(highVal);
 		const uint64_t lowPart = b_ntohl(lowVal);
-		return ((lowPart << 32) | highPart);
+		return (lowPart << 32) | highPart;
 	}
 
 	void Packet::writeBytes(const void *src, size_t len)
@@ -160,21 +160,21 @@ namespace libnet
 	{
 		uint8_t value;
 		readBytes(&value, 1);
-		return (value != 0);
+		return value != 0;
 	}
 
 	int8_t Packet::readInt8()
 	{
 		int8_t value;
 		readBytes(&value, 1);
-		return (value);
+		return value;
 	}
 
 	uint8_t Packet::readUInt8()
 	{
 		uint8_t value;
 		readBytes(&value, 1);
-		return (value);
+		return value;
 	}
 
 	int16_t Packet::readInt16()
@@ -183,9 +183,9 @@ namespace libnet
 		readBytes(&value, 2);
 #if __BYTE_ORDER == __LITTLE_ENDIAN
 		uint16_t tmp = b_ntohs(*reinterpret_cast<uint16_t*>(&value));
-		return (*reinterpret_cast<uint16_t*>(&tmp));
+		return *reinterpret_cast<uint16_t*>(&tmp);
 #else
-		return (value);
+		return value;
 #endif
 	}
 
@@ -195,9 +195,9 @@ namespace libnet
 		readBytes(&value, 2);
 #if __BYTE_ORDER == __LITTLE_ENDIAN
 		uint16_t tmp = b_ntohs(*reinterpret_cast<uint16_t*>(&value));
-		return (*reinterpret_cast<uint16_t*>(&tmp));
+		return *reinterpret_cast<uint16_t*>(&tmp);
 #else
-		return (value);
+		return value;
 #endif
 	}
 
@@ -207,9 +207,9 @@ namespace libnet
 		readBytes(&value, 4);
 #if __BYTE_ORDER == __LITTLE_ENDIAN
 		uint32_t tmp = b_ntohl(*reinterpret_cast<uint32_t*>(&value));
-		return (*reinterpret_cast<uint32_t*>(&tmp));
+		return *reinterpret_cast<uint32_t*>(&tmp);
 #else
-		return (value);
+		return value;
 #endif
 	}
 
@@ -219,9 +219,9 @@ namespace libnet
 		readBytes(&value, 4);
 #if __BYTE_ORDER == __LITTLE_ENDIAN
 		uint32_t tmp = b_ntohl(*reinterpret_cast<uint32_t*>(&value));
-		return (*reinterpret_cast<uint32_t*>(&tmp));
+		return *reinterpret_cast<uint32_t*>(&tmp);
 #else
-		return (value);
+		return value;
 #endif
 	}
 
@@ -231,9 +231,9 @@ namespace libnet
 		readBytes(&value, 8);
 #if __BYTE_ORDER == __LITTLE_ENDIAN
 		uint64_t tmp = b_ntohll(*reinterpret_cast<uint64_t*>(&value));
-		return (*reinterpret_cast<uint64_t*>(&tmp));
+		return *reinterpret_cast<uint64_t*>(&tmp);
 #else
-		return (value);
+		return value;
 #endif
 	}
 
@@ -243,9 +243,9 @@ namespace libnet
 		readBytes(&value, 8);
 #if __BYTE_ORDER == __LITTLE_ENDIAN
 		uint64_t tmp = b_ntohll(*reinterpret_cast<uint64_t*>(&value));
-		return (*reinterpret_cast<uint64_t*>(&tmp));
+		return *reinterpret_cast<uint64_t*>(&tmp);
 #else
-		return (value);
+		return value;
 #endif
 	}
 
@@ -255,9 +255,9 @@ namespace libnet
 		readBytes(&value, 4);
 #if __BYTE_ORDER == __LITTLE_ENDIAN
 		uint32_t tmp = b_ntohl(*reinterpret_cast<uint32_t*>(&value));
-		return (*reinterpret_cast<float*>(&tmp));
+		return *reinterpret_cast<float*>(&tmp);
 #else
-		return (value);
+		return value;
 #endif
 	}
 
@@ -267,9 +267,9 @@ namespace libnet
 		readBytes(&value, 8);
 #if __BYTE_ORDER == __LITTLE_ENDIAN
 		uint64_t tmp = b_ntohll(*reinterpret_cast<uint64_t*>(&value));
-		return (*reinterpret_cast<float*>(&tmp));
+		return *reinterpret_cast<float*>(&tmp);
 #else
-		return (value);
+		return value;
 #endif
 	}
 
@@ -284,7 +284,7 @@ namespace libnet
 			utf8::replace_invalid(value.begin(), value.end(), back_inserter(tmp));
 			value = tmp;
 		}
-		return (value);
+		return value;
 	}
 
 	void Packet::resize(uint64_t len)

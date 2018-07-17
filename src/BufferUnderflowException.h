@@ -15,7 +15,7 @@ namespace libnet
 	public:
 		BufferUnderflowException(std::string str): err(str) {};
 		~BufferUnderflowException() throw() {};
-		const char *what() const throw() {return (this->err.c_str());};
+		const char *what() const throw() {return this->err.c_str();};
 
 	};
 

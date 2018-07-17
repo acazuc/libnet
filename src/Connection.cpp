@@ -48,11 +48,11 @@ namespace libnet
 	bool Connection::checkWritePacket(Packet *packet)
 	{
 		if (!this->wBuffer.getRemaining())
-			return (false);
+			return false;
 		if (!packet->isHeaderSent())
 		{
 			if (this->wBuffer.getRemaining() < 6)
-				return (false);
+				return false;
 			this->wBuffer.writeUInt32(packet->getData().size() + 2);
 			this->wBuffer.writeUInt16(packet->getId());
 			packet->setHeaderSent(true);
@@ -62,20 +62,20 @@ namespace libnet
 			int32_t remaining = this->wBuffer.getRemaining();
 			this->wBuffer.writeBytes(packet->getData().data() + packet->getPosition(), remaining);
 			packet->setPosition(packet->getPosition() + remaining);
-			return (false);
+			return false;
 		}
 		this->wBuffer.writeBytes(packet->getData().data() + packet->getPosition(), packet->getRemaining());
 		packet->setPosition(packet->getData().size());
-		return (true);
+		return true;
 	}
 
 	bool Connection::initCrypt(const void *key, size_t keylen)
 	{
 		if (!this->rBuffer.initCrypt(key, keylen))
-			return (false);
+			return false;
 		if (!this->wBuffer.initCrypt(key, keylen))
-			return (false);
-		return (true);
+			return false;
+		return true;
 	}
 
 	void Connection::disableCrypt()
@@ -86,7 +86,7 @@ namespace libnet
 
 	int32_t Connection::recv()
 	{
-		return (this->socket.recv(this->rBuffer));
+		return this->socket.recv(this->rBuffer);
 	}
 
 	int32_t Connection::send()
@@ -99,7 +99,7 @@ namespace libnet
 			this->packets.pop();
 			delete (packet);
 		}
-		return (this->socket.send(this->wBuffer));
+		return this->socket.send(this->wBuffer);
 	}
 
 	void Connection::writeBytes(const void *data, size_t len)
@@ -119,7 +119,7 @@ namespace libnet
 
 	bool Connection::readBool()
 	{
-		return (this->rBuffer.readBool());
+		return this->rBuffer.readBool();
 	}
 
 	void Connection::writeInt8(int8_t value)
@@ -129,7 +129,7 @@ namespace libnet
 
 	int8_t Connection::readInt8()
 	{
-		return (this->rBuffer.readInt8());
+		return this->rBuffer.readInt8();
 	}
 
 	void Connection::writeUInt8(uint8_t value)
@@ -139,7 +139,7 @@ namespace libnet
 
 	uint8_t Connection::readUInt8()
 	{
-		return (this->rBuffer.readUInt8());
+		return this->rBuffer.readUInt8();
 	}
 
 	void Connection::writeInt16(int16_t value)
@@ -149,7 +149,7 @@ namespace libnet
 
 	int16_t Connection::readInt16()
 	{
-		return (this->rBuffer.readInt16());
+		return this->rBuffer.readInt16();
 	}
 
 	void Connection::writeUInt16(uint16_t value)
@@ -159,7 +159,7 @@ namespace libnet
 
 	uint16_t Connection::readUInt16()
 	{
-		return (this->rBuffer.readUInt16());
+		return this->rBuffer.readUInt16();
 	}
 
 	void Connection::writeInt32(int32_t value)
@@ -169,7 +169,7 @@ namespace libnet
 
 	int32_t Connection::readInt32()
 	{
-		return (this->rBuffer.readInt32());
+		return this->rBuffer.readInt32();
 	}
 
 	void Connection::writeUInt32(uint32_t value)
@@ -179,7 +179,7 @@ namespace libnet
 
 	uint32_t Connection::readUInt32()
 	{
-		return (this->rBuffer.readUInt32());
+		return this->rBuffer.readUInt32();
 	}
 
 	void Connection::writeInt64(int64_t value)
@@ -189,7 +189,7 @@ namespace libnet
 
 	int64_t Connection::readInt64()
 	{
-		return (this->rBuffer.readInt64());
+		return this->rBuffer.readInt64();
 	}
 
 	void Connection::writeUInt64(uint64_t value)
@@ -199,7 +199,7 @@ namespace libnet
 
 	uint64_t Connection::readUInt64()
 	{
-		return (this->rBuffer.readUInt64());
+		return this->rBuffer.readUInt64();
 	}
 
 	void Connection::writeFloat(float value)
@@ -209,7 +209,7 @@ namespace libnet
 
 	float Connection::readFloat()
 	{
-		return (this->rBuffer.readFloat());
+		return this->rBuffer.readFloat();
 	}
 
 	void Connection::writeDouble(double value)
@@ -219,7 +219,7 @@ namespace libnet
 
 	double Connection::readDouble()
 	{
-		return (this->rBuffer.readDouble());
+		return this->rBuffer.readDouble();
 	}
 
 	void Connection::writeString(std::string &value)
@@ -229,7 +229,7 @@ namespace libnet
 
 	std::string Connection::readString()
 	{
-		return (this->rBuffer.readString());
+		return this->rBuffer.readString();
 	}
 
 }

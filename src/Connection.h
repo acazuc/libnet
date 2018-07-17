@@ -58,12 +58,12 @@ namespace libnet
 			double readDouble();
 			void writeString(std::string &value);
 			std::string readString();
-			inline std::queue<Packet*> &getPackets() {return (this->packets);};
-			inline bool setBlocking(bool blocking) {return (this->socket.setBlocking(blocking));};
-			inline bool setNagle(bool nagle) {return (this->socket.setNagle(nagle));};
-			inline Socket &getSocket() {return (this->socket);};
-			inline Buffer &getRBuffer() {return (this->rBuffer);};
-			inline Buffer &getWBuffer() {return (this->wBuffer);};
+			inline std::queue<Packet*> &getPackets() {return this->packets;};
+			inline bool setBlocking(bool blocking) {return this->socket.setBlocking(blocking);};
+			inline bool setNagle(bool nagle) {return this->socket.setNagle(nagle);};
+			inline Socket &getSocket() {return this->socket;};
+			inline Buffer &getRBuffer() {return this->rBuffer;};
+			inline Buffer &getWBuffer() {return this->wBuffer;};
 
 	};
 

@@ -35,8 +35,8 @@ namespace libnet
 			bool setBlocking(bool blocking);
 			bool setRecvTimeout(uint64_t timeout);
 			bool setSendTimeout(uint64_t timeout);
-			SOCKET getSockfd() {return (this->sockfd);};
-			inline uint32_t getIp() {return (this->cli_addr.sin_addr.s_addr);};
+			SOCKET getSockfd() {return this->sockfd;};
+			inline uint32_t getIp() {return this->cli_addr.sin_addr.s_addr;};
 
 	};
 
