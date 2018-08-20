@@ -62,7 +62,7 @@ namespace libnet
 			std::swap(this->cryptBox[i], this->cryptBox[j]);
 		}
 		//Little bit better security (pre-calc some values)
-		uint64_t max = 1024 + this->cryptBox[0] + this->cryptBox[1];
+		uint64_t max = 4096 + this->cryptBox[0] + this->cryptBox[1];
 		for (uint16_t i = 0; i < max; ++i)
 		{
 			++this->cryptPos1;
