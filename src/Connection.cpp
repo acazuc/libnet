@@ -8,6 +8,7 @@ namespace libnet
 	, socket(socket)
 	, rBuffer(1024)
 	, wBuffer(1024)
+	, useShortPacketLength(false)
 	{
 		rBuffer.flip();
 	}
@@ -45,6 +46,86 @@ namespace libnet
 		this->currentPacket = NULL;
 	}
 
+	bool Connection::hasCompletePacket(uint32_t &packetSize)
+	{
+		if (this->useShortPacketLength)
+		{
+			if (this->rBuffer.getRemaining() < 1)
+				return false;
+			uint8_t first = this->rBuffer.readUInt8();
+			if (!(first & 0x80))
+			{
+				packetSize = first;
+				if (this->rBuffer.getRemaining() < packetSize)
+				{
+					this->rBuffer.setPosition(this->rBuffer.getPosition() - 1);
+					return false;
+				}
+				return true;
+			}
+			if ((first & 0xC0) == 0x80)
+			{
+				if (this->rBuffer.getRemaining() < 1)
+				{
+					this->rBuffer.setPosition(this->rBuffer.getPosition() - 1);
+					return false;
+				}
+				packetSize = static_cast<uint32_t>(first & 0x3F) << 8;
+				packetSize |= this->rBuffer.readUInt8();
+				if (this->rBuffer.getRemaining() < packetSize)
+				{
+					this->rBuffer.setPosition(this->rBuffer.getPosition() - 2);
+					return false;
+				}
+				return true;
+			}
+			if ((first & 0xE) == 0xC0)
+			{
+				if (this->rBuffer.getRemaining() < 2)
+				{
+					this->rBuffer.setPosition(this->rBuffer.getPosition() - 1);
+					return false;
+				}
+				packetSize = static_cast<uint32_t>(first & 0x1F) << 16;
+				packetSize |= static_cast<uint32_t>(this->rBuffer.readUInt8()) << 8;
+				packetSize |= this->rBuffer.readUInt8();
+				if (this->rBuffer.getRemaining() < packetSize)
+				{
+					this->rBuffer.setPosition(this->rBuffer.getPosition() - 3);
+					return false;
+				}
+				return true;
+			}
+			if (this->rBuffer.getRemaining() < 3)
+			{
+				this->rBuffer.setPosition(this->rBuffer.getPosition() - 1);
+				return false;
+			}
+			packetSize = static_cast<uint32_t>(first & 0xF) << 24;
+			packetSize |= static_cast<uint32_t>(this->rBuffer.readUInt8()) << 16;
+			packetSize |= static_cast<uint32_t>(this->rBuffer.readUInt8()) << 8;
+			packetSize |= this->rBuffer.readUInt8();
+			if (this->rBuffer.getRemaining() < packetSize)
+			{
+				this->rBuffer.setPosition(this->rBuffer.getPosition() - 4);
+				return false;
+			}
+			return true;
+		}
+		else
+		{
+			if (this->rBuffer.getRemaining() < 6)
+				return false;
+			packetSize = this->rBuffer.readUInt32();
+			if (this->rBuffer.getRemaining() < packetSize)
+			{
+				this->rBuffer.setPosition(this->rBuffer.getPosition() - 4);
+				return false;
+			}
+			return true;
+		}
+	}
+
 	bool Connection::checkWritePacket(Packet *packet)
 	{
 		if (!this->wBuffer.getRemaining())
@@ -53,7 +134,36 @@ namespace libnet
 		{
 			if (this->wBuffer.getRemaining() < 6)
 				return false;
-			this->wBuffer.writeUInt32(packet->getData().size() + 2);
+			if (this->useShortPacketLength)
+			{
+				uint32_t len = packet->getData().size() + 2;
+				if (len <= 0x7F)
+				{
+					this->wBuffer.writeUInt8(len);
+				}
+				else if (len <= 0x3FFF)
+				{
+					this->wBuffer.writeUInt8(((len >> 8) & 0x3F) | 0x80);
+					this->wBuffer.writeUInt8(len & 0xFF);
+				}
+				else if (len <= 0x1FFFFF)
+				{
+					this->wBuffer.writeUInt8(((len >> 16) & 0x1F) | 0xC0);
+					this->wBuffer.writeUInt8((len >> 8) & 0xFF);
+					this->wBuffer.writeUInt8(len & 0xFF);
+				}
+				else
+				{
+					this->wBuffer.writeUInt8(((len >> 24) & 0xF) | 0xE0);
+					this->wBuffer.writeUInt8((len >> 16) & 0xFF);
+					this->wBuffer.writeUInt8((len >> 8) & 0xFF);
+					this->wBuffer.writeUInt8(len & 0xFF);
+				}
+			}
+			else
+			{
+				this->wBuffer.writeUInt32(packet->getData().size() + 2);
+			}
 			this->wBuffer.writeUInt16(packet->getId());
 			packet->setHeaderSent(true);
 		}

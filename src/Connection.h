@@ -21,6 +21,7 @@ namespace libnet
 			Buffer rBuffer;
 			Buffer wBuffer;
 			uint32_t packetStart;
+			bool useShortPacketLength;
 			bool checkWritePacket(Packet *packet);
 
 		public:
@@ -28,6 +29,7 @@ namespace libnet
 			~Connection();
 			void startPacket(uint16_t packet);
 			void endPacket();
+			bool hasCompletePacket(uint32_t &packetSize);
 			bool initCrypt(const void *key, size_t keylen);
 			void disableCrypt();
 			int32_t recv();
@@ -61,6 +63,7 @@ namespace libnet
 			inline std::queue<Packet*> &getPackets() {return this->packets;};
 			inline bool setBlocking(bool blocking) {return this->socket.setBlocking(blocking);};
 			inline bool setNagle(bool nagle) {return this->socket.setNagle(nagle);};
+			inline void setUseShortPacketLength(bool use) {this->useShortPacketLength = use;};
 			inline Socket &getSocket() {return this->socket;};
 			inline Buffer &getRBuffer() {return this->rBuffer;};
 			inline Buffer &getWBuffer() {return this->wBuffer;};
