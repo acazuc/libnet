@@ -49,10 +49,8 @@ odir:
 
 clean:
 	@rm -f $(OBJS)
-
-fclean: clean
 	@rm -f $(NAME)
 
-re: fclean all
+re: clean all
 
-.PHONY: all clean fclean re
+.PHONY: all clean re odir
