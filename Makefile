@@ -2,17 +2,15 @@ NAME = libnet.a
 
 CC = g++
 
-ARCH =
+override CLFAGS += -std=c++14 -g -Wall -Wextra -O3 -pipe
 
-AR = gcc-ar
+AR = ar
 
-ARFLAGS =
+ARFLAGS = rc
 
-RANLIB = gcc-ranlib
+RANLIB = ranlib
 
 RANLIBFLAGS =
-
-CLFAGS = -std=c++14 -g -Wall -Wextra -O3 -pipe -fno-rtti
 
 INCLUDES_PATH = -I src
 INCLUDES_PATH+= -I lib
@@ -37,23 +35,22 @@ OBJS = $(addprefix $(OBJS_PATH), $(OBJS_NAME))
 all: odir $(NAME)
 
 $(NAME): $(OBJS)
-	@echo " - Making $(NAME)"
-	@$(AR) -rc $(ARFLAGS) $(NAME) $(OBJS)
+	@echo "AR $(NAME)"
+	@$(AR) $(ARFLAGS) $(NAME) $(OBJS)
+	@echo "RANLIB $(NAME)"
 	@$(RANLIB) $(RANLIBFLAGS) $(NAME)
 
 $(OBJS_PATH)%.opp: $(SRCS_PATH)%.cpp
-	@echo " - Compiling $<"
-	@$(CC) $(ARCH) $(CFLAGS) -o $@ -c $< $(INCLUDES_PATH)
+	@echo "CXX $<"
+	@$(CXX) $(CXXFLAGS) -o $@ -c $< $(INCLUDES_PATH)
 
 odir:
 	@mkdir -p $(OBJS_PATH)
 
 clean:
-	@echo " - Cleaning objs"
 	@rm -f $(OBJS)
 
 fclean: clean
-	@echo " - Cleaning lib"
 	@rm -f $(NAME)
 
 re: fclean all
