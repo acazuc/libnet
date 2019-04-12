@@ -21,6 +21,26 @@ namespace libnet
 		return epoll_wait(this->fd, events, eventsCount, timeout);
 	}
 
+	int EventsListener::waitForEvents(Event *events, int eventsCount, int timeout)
+	{
+		std::vector<struct epoll_event> evt(eventsCount);
+		int ret = epoll_wait(this->fd, evt.data(), eventsCount, timeout);
+		if (ret <= 0)
+			return ret;
+		for (size_t i = 0; i < ret; ++i)
+		{
+			events[i].data.ptr = evt[i].data.ptr;
+			events[i].events = 0;
+			if (evt[i].events & EPOLLIN)
+				events[i].events |= EVENT_READ;
+			if (evt[i].events & EPOLLOUT)
+				events[i].events |= EVENT_WRITE;
+			if (evt[i].events & EPOLLRDHUP)
+				events[i].events |= EVENT_RDHUP;
+		}
+		return ret;
+	}
+
 	bool EventsListener::addSocket(Socket *socket, uint8_t mode, void *data)
 	{
 		struct epoll_event event;

@@ -16,6 +16,17 @@
 namespace libnet
 {
 
+	struct Event
+	{
+		union
+		{
+			void *ptr;
+			uint32_t u32;
+			uint64_t u64;
+		} data;
+		uint8_t events;
+	};
+
 	class EventsListener
 	{
 
@@ -26,6 +37,7 @@ namespace libnet
 		EventsListener();
 		~EventsListener();
 		int waitForEvents(struct epoll_event *events, int eventsCount, int timeout);
+		int waitForEvents(Event *events, int eventsCount, int timeout);
 		bool addSocket(Socket *socket, uint8_t events, void *data);
 		bool removeSocket(Socket *socket);
 
