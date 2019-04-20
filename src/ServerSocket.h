@@ -27,6 +27,7 @@ namespace libnet
 			Socket *accept();
 			bool setNagle(bool active);
 			bool setBlocking(bool blocking);
+			inline SOCKET getSockfd() {return this->sockfd;};
 
 	};
 
