@@ -1,6 +1,4 @@
 #include "Buffer.h"
-#include "BufferUnderflowException.h"
-#include "BufferOverflowException.h"
 #include "SocketPlatform.h"
 #include <stdexcept>
 #include <cstring>
@@ -17,17 +15,17 @@ namespace libnet
 		this->data.resize(capacity);
 	}
 
-	uint16_t Buffer::b_ntohs(uint16_t value)
+	uint16_t Buffer::b_ntohs(const uint16_t value)
 	{
 		return ((value & 0xff00) >> 8) | ((value & 0xff) << 8);
 	}
 
-	uint32_t Buffer::b_ntohl(uint32_t value)
+	uint32_t Buffer::b_ntohl(const uint32_t value)
 	{
 		return ((value >> 24) & 0xff) | ((value >> 8) & 0xff00) | ((value & 0xff00) << 8) | ((value & 0xff) << 24);
 	}
 
-	uint64_t Buffer::b_ntohll(uint64_t value)
+	uint64_t Buffer::b_ntohll(const uint64_t value)
 	{
 		return ((value >> 56) & 0xff) | ((value >> 40) & 0xff00) | ((value >> 24) & 0xff0000) | ((value >> 8) & 0xff000000
 				| ((value & 0xff000000) << 8) | ((value & 0xff0000) << 24) | ((value & 0xff00) << 40) | ((value & 0xff) << 56));
@@ -80,109 +78,109 @@ namespace libnet
 	void Buffer::writeBytes(const void *src, size_t len)
 	{
 		if (this->position + len > this->limit)
-			throw BufferOverflowException("position = " + std::to_string(this->position) + "; limit = " + std::to_string(this->limit) + "; len = " + std::to_string(len));
+			throw std::overflow_error("position = " + std::to_string(this->position) + "; limit = " + std::to_string(this->limit) + "; len = " + std::to_string(len));
 		std::memmove(&this->data[this->position], src, len);
 		if (this->crypted)
 			crypt(this->position, len);
 		setPosition(this->position + len);
 	}
 
-	void Buffer::writeBool(bool value)
+	void Buffer::writeBool(const bool value)
 	{
 		writeUInt8(value ? 1 : 0);
 	}
 
-	void Buffer::writeInt8(int8_t value)
+	void Buffer::writeInt8(const int8_t value)
 	{
 		writeBytes(&value, 1);
 	}
 
-	void Buffer::writeUInt8(uint8_t value)
+	void Buffer::writeUInt8(const uint8_t value)
 	{
 		writeBytes(&value, 1);
 	}
 
-	void Buffer::writeInt16(int16_t value)
+	void Buffer::writeInt16(const int16_t value)
 	{
 #if __BYTE_ORDER == __LITTLE_ENDIAN
-		uint16_t val = b_ntohs(*reinterpret_cast<uint16_t*>(&value));
-		writeBytes(&val, 2);
-#else
-		writeBytes(&value, 2);
-#endif
-
-	}
-	void Buffer::writeUInt16(uint16_t value)
-	{
-#if __BYTE_ORDER == __LITTLE_ENDIAN
-		uint16_t val = b_ntohs(value);
+		const uint16_t val = b_ntohs(*reinterpret_cast<const uint16_t*>(&value));
 		writeBytes(&val, 2);
 #else
 		writeBytes(&value, 2);
 #endif
 	}
 
-	void Buffer::writeInt32(int32_t value)
+	void Buffer::writeUInt16(const uint16_t value)
 	{
 #if __BYTE_ORDER == __LITTLE_ENDIAN
-		uint32_t val = b_ntohl(*reinterpret_cast<uint32_t*>(&value));
+		const uint16_t val = b_ntohs(value);
+		writeBytes(&val, 2);
+#else
+		writeBytes(&value, 2);
+#endif
+	}
+
+	void Buffer::writeInt32(const int32_t value)
+	{
+#if __BYTE_ORDER == __LITTLE_ENDIAN
+		const uint32_t val = b_ntohl(*reinterpret_cast<const uint32_t*>(&value));
 		writeBytes(&val, 4);
 #else
 		writeBytes(&value, 4);
 #endif
 	}
 
-	void Buffer::writeUInt32(uint32_t value)
+	void Buffer::writeUInt32(const uint32_t value)
 	{
 #if __BYTE_ORDER == __LITTLE_ENDIAN
-		uint32_t val = b_ntohl(value);
+		const uint32_t val = b_ntohl(value);
 		writeBytes(&val, 4);
 #else
 		writeBytes(&value, 4);
 #endif
 	}
 
-	void Buffer::writeInt64(int64_t value)
+	void Buffer::writeInt64(const int64_t value)
 	{
 #if __BYTE_ORDER == __LITTLE_ENDIAN
-		uint64_t val = b_ntohll(*reinterpret_cast<uint64_t*>(&value));
+		const uint64_t val = b_ntohll(*reinterpret_cast<const uint64_t*>(&value));
 		writeBytes(&val, 8);
 #else
 		writeBytes(&value, 8);
 #endif
 	}
 
-	void Buffer::writeUInt64(uint64_t value)
+	void Buffer::writeUInt64(const uint64_t value)
 	{
 #if __BYTE_ORDER == __LITTLE_ENDIAN
-		uint64_t val = b_ntohll(value);
+		const uint64_t val = b_ntohll(value);
 		writeBytes(&val, 8);
 #else
 		writeBytes(&value, 8);
 #endif
 	}
 
-	void Buffer::writeFloat(float value)
+	void Buffer::writeFloat(const float value)
 	{
 #if __BYTE_ORDER == __LITTLE_ENDIAN
-		uint32_t val = b_ntohl(*reinterpret_cast<uint32_t*>(&value));
+		const uint32_t val = b_ntohl(*reinterpret_cast<const uint32_t*>(&value));
 		writeBytes(&val, 4);
 #else
 		writeBytes(&value, 4);
 #endif
 	}
 
-	void Buffer::writeDouble(double value)
+	void Buffer::writeDouble(const double value)
 	{
 #if __BYTE_ORDER == __LITTLE_ENDIAN
-		uint64_t val = b_ntohll(*reinterpret_cast<uint64_t*>(&value));
+		const uint64_t val = b_ntohll(*reinterpret_cast<const uint64_t*>(&value));
 		writeBytes(&val, 8);
 #else
 		writeBytes(&value, 8);
 #endif
 	}
 
-	void Buffer::writeString(std::string &value)
+	void Buffer::writeString(const std::string &value)
 	{
 		writeUInt16(value.length());
 		writeBytes(value.c_str(), value.length());
@@ -191,7 +189,7 @@ namespace libnet
 	void Buffer::readBytes(void *dst, size_t len)
 	{
 		if (this->position + len > this->limit)
-			throw BufferUnderflowException("position = " + std::to_string(this->position) + "; limit = " + std::to_string(this->limit) + "; len = " + std::to_string(len));
+			throw std::underflow_error("position = " + std::to_string(this->position) + "; limit = " + std::to_string(this->limit) + "; len = " + std::to_string(len));
 		std::memmove(dst, &this->data[this->position], len);
 		setPosition(this->position + len);
 	}

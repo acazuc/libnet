@@ -46,103 +46,103 @@ namespace libnet
 		std::memcpy(this->data.data() + pos, src, len);
 	}
 
-	void Packet::writeBool(bool value)
+	void Packet::writeBool(const bool value)
 	{
 		uint8_t val = value ? 1 : 0;
 		writeBytes(&val, 1);
 	}
 
-	void Packet::writeInt8(int8_t value)
+	void Packet::writeInt8(const int8_t value)
 	{
 		writeBytes(&value, 1);
 	}
 
-	void Packet::writeUInt8(uint8_t value)
+	void Packet::writeUInt8(const uint8_t value)
 	{
 		writeBytes(&value, 1);
 	}
 
-	void Packet::writeInt16(int16_t value)
+	void Packet::writeInt16(const int16_t value)
 	{
 #if __BYTE_ORDER == __LITTLE_ENDIAN
-		uint16_t tmp = b_ntohs(*reinterpret_cast<uint16_t*>(&value));
+		const uint16_t tmp = b_ntohs(*reinterpret_cast<const uint16_t*>(&value));
 		writeBytes(&tmp, 2);
 #else
 		writeBytes(&value, 2);
 #endif
 	}
 
-	void Packet::writeUInt16(uint16_t value)
+	void Packet::writeUInt16(const uint16_t value)
 	{
 #if __BYTE_ORDER == __LITTLE_ENDIAN
-		uint16_t tmp = b_ntohs(*reinterpret_cast<uint16_t*>(&value));
+		const uint16_t tmp = b_ntohs(*reinterpret_cast<const uint16_t*>(&value));
 		writeBytes(&tmp, 2);
 #else
 		writeBytes(&value, 2);
 #endif
 	}
 
-	void Packet::writeInt32(int32_t value)
+	void Packet::writeInt32(const int32_t value)
 	{
 #if __BYTE_ORDER == __LITTLE_ENDIAN
-		uint32_t tmp = b_ntohl(*reinterpret_cast<uint32_t*>(&value));
+		const uint32_t tmp = b_ntohl(*reinterpret_cast<const uint32_t*>(&value));
 		writeBytes(&tmp, 4);
 #else
 		writeBytes(&value, 4);
 #endif
 	}
 
-	void Packet::writeUInt32(uint32_t value)
+	void Packet::writeUInt32(const uint32_t value)
 	{
 #if __BYTE_ORDER == __LITTLE_ENDIAN
-		uint32_t tmp = b_ntohl(*reinterpret_cast<uint32_t*>(&value));
+		const uint32_t tmp = b_ntohl(*reinterpret_cast<const uint32_t*>(&value));
 		writeBytes(&tmp, 4);
 #else
 		writeBytes(&value, 4);
 #endif
 	}
 
-	void Packet::writeInt64(int64_t value)
+	void Packet::writeInt64(const int64_t value)
 	{
 #if __BYTE_ORDER == __LITTLE_ENDIAN
-		uint64_t tmp = b_ntohll(*reinterpret_cast<uint64_t*>(&value));
+		const uint64_t tmp = b_ntohll(*reinterpret_cast<const uint64_t*>(&value));
 		writeBytes(&tmp, 8);
 #else
 		writeBytes(&value, 8);
 #endif
 	}
 
-	void Packet::writeUInt64(uint64_t value)
+	void Packet::writeUInt64(const uint64_t value)
 	{
 #if __BYTE_ORDER == __LITTLE_ENDIAN
-		uint64_t tmp = b_ntohll(*reinterpret_cast<uint64_t*>(&value));
+		const uint64_t tmp = b_ntohll(*reinterpret_cast<const uint64_t*>(&value));
 		writeBytes(&tmp, 8);
 #else
 		writeBytes(&value, 8);
 #endif
 	}
 
-	void Packet::writeFloat(float value)
+	void Packet::writeFloat(const float value)
 	{
 #if __BYTE_ORDER == __LITTLE_ENDIAN
-		uint32_t tmp = b_ntohl(*reinterpret_cast<uint32_t*>(&value));
+		const uint32_t tmp = b_ntohl(*reinterpret_cast<const uint32_t*>(&value));
 		writeBytes(&tmp, 4);
 #else
 		writeBytes(&value, 4);
 #endif
 	}
 
-	void Packet::writeDouble(double value)
+	void Packet::writeDouble(const double value)
 	{
 #if __BYTE_ORDER == __LITTLE_ENDIAN
-		uint64_t tmp = b_ntohll(*reinterpret_cast<uint64_t*>(&value));
+		const uint64_t tmp = b_ntohll(*reinterpret_cast<const uint64_t*>(&value));
 		writeBytes(&tmp, 8);
 #else
 		writeBytes(&value, 8);
 #endif
 	}
 
-	void Packet::writeString(std::string &value)
+	void Packet::writeString(const std::string &value)
 	{
 		writeUInt16(value.length());
 		writeBytes(value.data(), value.length());
@@ -151,7 +151,7 @@ namespace libnet
 	void Packet::readBytes(void *dst, size_t len)
 	{
 		if (this->position + len > this->data.size())
-			throw std::out_of_range("Packet buffer underflow (position = " + std::to_string(this->position) + ", size = " + std::to_string(this->data.size()) + ", len = " + std::to_string(len) + ")");
+			throw std::underflow_error("Packet buffer underflow (position = " + std::to_string(this->position) + ", size = " + std::to_string(this->data.size()) + ", len = " + std::to_string(len) + ")");
 		std::memcpy(dst, this->data.data() + this->position, len);
 		this->position += len;
 	}

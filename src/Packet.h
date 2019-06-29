@@ -21,20 +21,20 @@ namespace libnet
 		uint64_t b_ntohll(uint64_t value);
 
 	public:
-		Packet(uint16_t id);
+		Packet(const uint16_t id);
 		void writeBytes(const void *src, size_t len);
-		void writeBool(bool value);
-		void writeInt8(int8_t value);
-		void writeUInt8(uint8_t value);
-		void writeInt16(int16_t value);
-		void writeUInt16(uint16_t value);
-		void writeInt32(int32_t value);
-		void writeUInt32(uint32_t value);
-		void writeInt64(int64_t value);
-		void writeUInt64(uint64_t value);
-		void writeFloat(float value);
-		void writeDouble(double value);
-		void writeString(std::string &value);
+		void writeBool(const bool value);
+		void writeInt8(const int8_t value);
+		void writeUInt8(const uint8_t value);
+		void writeInt16(const int16_t value);
+		void writeUInt16(const uint16_t value);
+		void writeInt32(const int32_t value);
+		void writeUInt32(const uint32_t value);
+		void writeInt64(const int64_t value);
+		void writeUInt64(const uint64_t value);
+		void writeFloat(const float value);
+		void writeDouble(const double value);
+		void writeString(const std::string &value);
 		void readBytes(void *dst, size_t len);
 		bool readBool();
 		int8_t readInt8();

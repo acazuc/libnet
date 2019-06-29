@@ -23,7 +23,7 @@ namespace libnet
 		}
 	}
 
-	void Connection::startPacket(uint16_t packet)
+	void Connection::startPacket(const uint16_t packet)
 	{
 		this->currentPacket = new Packet(packet);
 	}
@@ -222,7 +222,7 @@ namespace libnet
 		this->rBuffer.readBytes(data, len);
 	}
 
-	void Connection::writeBool(bool value)
+	void Connection::writeBool(const bool value)
 	{
 		this->currentPacket->writeBool(value);
 	}
@@ -232,7 +232,7 @@ namespace libnet
 		return this->rBuffer.readBool();
 	}
 
-	void Connection::writeInt8(int8_t value)
+	void Connection::writeInt8(const int8_t value)
 	{
 		this->currentPacket->writeInt8(value);
 	}
@@ -242,7 +242,7 @@ namespace libnet
 		return this->rBuffer.readInt8();
 	}
 
-	void Connection::writeUInt8(uint8_t value)
+	void Connection::writeUInt8(const uint8_t value)
 	{
 		this->currentPacket->writeUInt8(value);
 	}
@@ -252,7 +252,7 @@ namespace libnet
 		return this->rBuffer.readUInt8();
 	}
 
-	void Connection::writeInt16(int16_t value)
+	void Connection::writeInt16(const int16_t value)
 	{
 		this->currentPacket->writeInt16(value);
 	}
@@ -262,7 +262,7 @@ namespace libnet
 		return this->rBuffer.readInt16();
 	}
 
-	void Connection::writeUInt16(uint16_t value)
+	void Connection::writeUInt16(const uint16_t value)
 	{
 		this->currentPacket->writeUInt16(value);
 	}
@@ -272,7 +272,7 @@ namespace libnet
 		return this->rBuffer.readUInt16();
 	}
 
-	void Connection::writeInt32(int32_t value)
+	void Connection::writeInt32(const int32_t value)
 	{
 		this->currentPacket->writeInt32(value);
 	}
@@ -282,7 +282,7 @@ namespace libnet
 		return this->rBuffer.readInt32();
 	}
 
-	void Connection::writeUInt32(uint32_t value)
+	void Connection::writeUInt32(const uint32_t value)
 	{
 		this->currentPacket->writeUInt32(value);
 	}
@@ -292,7 +292,7 @@ namespace libnet
 		return this->rBuffer.readUInt32();
 	}
 
-	void Connection::writeInt64(int64_t value)
+	void Connection::writeInt64(const int64_t value)
 	{
 		this->currentPacket->writeInt64(value);
 	}
@@ -302,7 +302,7 @@ namespace libnet
 		return this->rBuffer.readInt64();
 	}
 
-	void Connection::writeUInt64(uint64_t value)
+	void Connection::writeUInt64(const uint64_t value)
 	{
 		this->currentPacket->writeUInt64(value);
 	}
@@ -312,7 +312,7 @@ namespace libnet
 		return this->rBuffer.readUInt64();
 	}
 
-	void Connection::writeFloat(float value)
+	void Connection::writeFloat(const float value)
 	{
 		this->currentPacket->writeFloat(value);
 	}
@@ -322,7 +322,7 @@ namespace libnet
 		return this->rBuffer.readFloat();
 	}
 
-	void Connection::writeDouble(double value)
+	void Connection::writeDouble(const double value)
 	{
 		this->currentPacket->writeDouble(value);
 	}
@@ -332,7 +332,7 @@ namespace libnet
 		return this->rBuffer.readDouble();
 	}
 
-	void Connection::writeString(std::string &value)
+	void Connection::writeString(const std::string &value)
 	{
 		this->currentPacket->writeString(value);
 	}
