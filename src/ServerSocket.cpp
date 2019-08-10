@@ -5,41 +5,41 @@ namespace libnet
 {
 
 	ServerSocket::ServerSocket()
-	: opened(false)
+	: protocol(nullptr)
 	, bound(false)
 	{
-		//Empty
 	}
 
 	ServerSocket::~ServerSocket()
 	{
-		if (this->opened)
-			closesocket(this->sockfd);
+		close();
 	}
 
-	bool ServerSocket::open()
+	bool ServerSocket::open(const Protocol *protocol)
 	{
-		if (this->opened)
+		if (this->protocol)
 			return false;
-		if ((this->sockfd = ::socket(AF_INET, SOCK_STREAM, 0)) == INVALID_SOCKET)
+		if ((this->sockfd = ::socket(protocol->domain, protocol->type, protocol->protocol)) == INVALID_SOCKET)
 			return false;
-		this->opened = true;
+		int flag = 1;
+		::setsockopt(this->sockfd, IPPROTO_IPV6, IPV6_V6ONLY, (char*)&flag, sizeof(flag));
+		this->protocol = protocol;
 		return true;
 	}
 
 	bool ServerSocket::close()
 	{
-		if (!this->opened)
+		if (!this->protocol)
 			return false;
 		closesocket(this->sockfd);
-		this->opened = false;
+		this->protocol = nullptr;
 		this->bound = false;
 		return true;
 	}
 
 	bool ServerSocket::shutdown()
 	{
-		if (!this->opened)
+		if (!this->protocol)
 			return false;
 #ifdef LIBNET_PLATFORM_WINDOWS
 		::shutdown(this->sockfd, SD_BOTH);
@@ -53,13 +53,28 @@ namespace libnet
 
 	bool ServerSocket::bind(uint16_t port)
 	{
-		if (!this->opened)
+		if (!this->protocol)
 			return false;
-		std::memset((char *)&server_addr, 0, sizeof(server_addr));
-		server_addr.sin_family = AF_INET;
-		server_addr.sin_addr.s_addr = INADDR_ANY;
-		server_addr.sin_port = htons(port);
-		if (::bind(this->sockfd, (struct sockaddr*)&server_addr, sizeof(server_addr)) == SOCKET_ERROR)
+		std::memset(&this->sockaddr_u, 0, sizeof(this->sockaddr_u));
+		SOCKLEN_T socklen;
+		switch (this->protocol->domain)
+		{
+			case AF_INET:
+				this->sockaddr_u.sockaddr_in.sin_family = AF_INET;
+				this->sockaddr_u.sockaddr_in.sin_addr.s_addr = INADDR_ANY;
+				this->sockaddr_u.sockaddr_in.sin_port = htons(port);
+				socklen = sizeof(this->sockaddr_u.sockaddr_in);
+				break;
+			case AF_INET6:
+				this->sockaddr_u.sockaddr_in6.sin6_family = AF_INET6;
+				std::memset(&this->sockaddr_u.sockaddr_in6.sin6_addr, 0, sizeof(this->sockaddr_u.sockaddr_in6.sin6_addr));
+				this->sockaddr_u.sockaddr_in6.sin6_port = htons(port);
+				socklen = sizeof(this->sockaddr_u.sockaddr_in6);
+				break;
+			default:
+				return false;
+		}
+		if (::bind(this->sockfd, &this->sockaddr_u.sockaddr, socklen) == SOCKET_ERROR)
 			return false;
 		listen(this->sockfd, 255);
 		this->bound = true;
@@ -68,31 +83,33 @@ namespace libnet
 
 	Socket *ServerSocket::accept()
 	{
-		SOCKADDR_IN cli_addr;
-		SOCKLEN_T cli_len;
+		struct sockaddr sockaddr;
+		SOCKLEN_T socklen;
 		SOCKET newsockfd;
 		if (!this->bound)
-			return NULL;
-		cli_len = sizeof(cli_addr);
-		if ((newsockfd = ::accept(this->sockfd, (struct sockaddr*)&cli_addr, &cli_len)) == INVALID_SOCKET)
-			return NULL;
-		return new Socket(newsockfd, cli_addr);
+			return nullptr;
+		socklen = sizeof(sockaddr);
+		if ((newsockfd = ::accept(this->sockfd, &sockaddr, &socklen)) == INVALID_SOCKET)
+			return nullptr;
+		return new Socket(newsockfd, sockaddr, this->protocol);
 	}
 
 	bool ServerSocket::setNagle(bool active)
 	{
+		if (!this->protocol)
+			return false;
 		int flag = active ? 1 : 0;
 		return setsockopt(this->sockfd, IPPROTO_TCP, TCP_NODELAY, (char*)&flag, sizeof(flag)) == 0;
 	}
 
 	bool ServerSocket::setBlocking(bool blocking)
 	{
+		if (!this->protocol)
+			return false;
 #ifdef LIBNET_PLATFORM_WINDOWS
 		u_long mode = blocking ? 0 : 1;
 		return ioctlsocket(this->sockfd, FIONBIO, &mode) == 0;
 #elif defined LIBNET_PLATFORM_LINUX
-		if (!this->opened)
-			return false;
 		int flags = fcntl(this->sockfd, F_GETFL, 0);
 		if (flags == -1)
 			return false;

@@ -2,6 +2,7 @@
 # define LIBNET_SOCKET_H
 
 # include "SocketPlatform.h"
+# include "Protocol.h"
 # include "Buffer.h"
 # include <string>
 
@@ -11,21 +12,26 @@ namespace libnet
 	class Socket
 	{
 
-		private:
-			SOCKADDR_IN cli_addr;
+		protected:
+			union
+			{
+				struct sockaddr sockaddr;
+				struct sockaddr_in sockaddr_in;
+				struct sockaddr_in6 sockaddr_in6;
+			} sockaddr_u;
+			const Protocol *protocol;
 			SOCKET sockfd;
 			bool waitingConnection;
 			bool connected;
-			bool opened;
 
 		public:
-			Socket(SOCKET sockfd, SOCKADDR_IN cli_addr);
+			Socket(SOCKET sockfd, struct sockaddr sockaddr, const Protocol *protocol);
 			Socket();
-			~Socket();
-			bool open();
+			virtual ~Socket();
+			bool open(const Protocol *protocol);
 			bool close();
 			bool shutdown();
-			bool connect(std::string host, uint16_t port);
+			bool connect(const std::string &host, uint16_t port);
 			int getConnectionStatus();
 			int32_t send(const void *data, int32_t len);
 			int32_t send(Buffer &buffer);
@@ -35,8 +41,8 @@ namespace libnet
 			bool setBlocking(bool blocking);
 			bool setRecvTimeout(uint64_t timeout);
 			bool setSendTimeout(uint64_t timeout);
+			size_t getIp(void *data);
 			SOCKET getSockfd() {return this->sockfd;};
-			inline uint32_t getIp() {return this->cli_addr.sin_addr.s_addr;};
 
 	};
 

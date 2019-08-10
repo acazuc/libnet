@@ -22,7 +22,7 @@ namespace libnet
 			Buffer wBuffer;
 			uint32_t packetStart;
 			bool useShortPacketLength;
-			bool checkWritePacket(Packet *packet);
+			bool checkWritePacket(Packet &packet);
 
 		public:
 			Connection(Socket &socket);

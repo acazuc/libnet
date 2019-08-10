@@ -1,8 +1,8 @@
 NAME = libnet.a
 
-CC = g++
+CXX = g++
 
-override CLFAGS += -std=c++14 -g -Wall -Wextra -O3 -pipe
+override CXXLFAGS += -std=c++14 -g -Wall -Wextra -O3 -pipe
 
 AR = ar
 
@@ -23,6 +23,7 @@ SRCS_NAME = Buffer.cpp \
 	    Connection.cpp \
 	    Packet.cpp \
 	    EventsListener.cpp \
+	    Protocol.cpp \
 
 SRCS = $(addprefix $(SRCS_PATH), $(SRCS_NAME))
 

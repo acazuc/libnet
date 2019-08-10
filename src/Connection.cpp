@@ -34,7 +34,7 @@ namespace libnet
 			return;
 		if (!this->packets.size())
 		{
-			if (checkWritePacket(this->currentPacket))
+			if (checkWritePacket(*this->currentPacket))
 				delete (this->currentPacket);
 			else
 				this->packets.push(this->currentPacket);
@@ -126,17 +126,17 @@ namespace libnet
 		}
 	}
 
-	bool Connection::checkWritePacket(Packet *packet)
+	bool Connection::checkWritePacket(Packet &packet)
 	{
 		if (!this->wBuffer.getRemaining())
 			return false;
-		if (!packet->isHeaderSent())
+		if (!packet.isHeaderSent())
 		{
 			if (this->wBuffer.getRemaining() < 6)
 				return false;
 			if (this->useShortPacketLength)
 			{
-				uint32_t len = packet->getData().size() + 2;
+				uint32_t len = packet.getData().size() + 2;
 				if (len <= 0x7F)
 				{
 					this->wBuffer.writeUInt8(len);
@@ -162,20 +162,20 @@ namespace libnet
 			}
 			else
 			{
-				this->wBuffer.writeUInt32(packet->getData().size() + 2);
+				this->wBuffer.writeUInt32(packet.getData().size() + 2);
 			}
-			this->wBuffer.writeUInt16(packet->getId());
-			packet->setHeaderSent(true);
+			this->wBuffer.writeUInt16(packet.getId());
+			packet.setHeaderSent(true);
 		}
-		if (this->wBuffer.getRemaining() < packet->getRemaining())
+		if (this->wBuffer.getRemaining() < packet.getRemaining())
 		{
 			int32_t remaining = this->wBuffer.getRemaining();
-			this->wBuffer.writeBytes(packet->getData().data() + packet->getPosition(), remaining);
-			packet->setPosition(packet->getPosition() + remaining);
+			this->wBuffer.writeBytes(packet.getData().data() + packet.getPosition(), remaining);
+			packet.setPosition(packet.getPosition() + remaining);
 			return false;
 		}
-		this->wBuffer.writeBytes(packet->getData().data() + packet->getPosition(), packet->getRemaining());
-		packet->setPosition(packet->getData().size());
+		this->wBuffer.writeBytes(packet.getData().data() + packet.getPosition(), packet.getRemaining());
+		packet.setPosition(packet.getData().size());
 		return true;
 	}
 
@@ -204,7 +204,7 @@ namespace libnet
 		while (this->packets.size())
 		{
 			Packet *packet = this->packets.front();
-			if (!checkWritePacket(packet))
+			if (!checkWritePacket(*packet))
 				break;
 			this->packets.pop();
 			delete (packet);
@@ -322,7 +322,7 @@ namespace libnet
 		return this->rBuffer.readFloat();
 	}
 
-	void Connection::writeDouble(const double value)
+	void Connection::writeDouble(double value)
 	{
 		this->currentPacket->writeDouble(value);
 	}

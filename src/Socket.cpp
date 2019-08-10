@@ -1,25 +1,24 @@
 #include "Socket.h"
+#include <iostream>
 #include <cstring>
 
 namespace libnet
 {
 
-	Socket::Socket(SOCKET sockfd, SOCKADDR_IN cli_addr)
-	: cli_addr(cli_addr)
+	Socket::Socket(SOCKET sockfd, struct sockaddr sockaddr, const Protocol *protocol)
+	: protocol(protocol)
 	, sockfd(sockfd)
 	, waitingConnection(false)
 	, connected(true)
-	, opened(true)
 	{
-		//Empty
+		this->sockaddr_u.sockaddr = sockaddr;
 	}
 
 	Socket::Socket()
-	: waitingConnection(false)
+	: protocol(nullptr)
+	, waitingConnection(false)
 	, connected(false)
-	, opened(false)
 	{
-		//Empty
 	}
 
 	Socket::~Socket()
@@ -27,22 +26,22 @@ namespace libnet
 		close();
 	}
 
-	bool Socket::open()
+	bool Socket::open(const Protocol *protocol)
 	{
-		if (this->opened)
+		if (this->protocol)
 			return false;
-		if ((this->sockfd = ::socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) == INVALID_SOCKET)
+		if ((this->sockfd = ::socket(protocol->domain, protocol->type, protocol->protocol)) == INVALID_SOCKET)
 			return false;
-		this->opened = true;
+		this->protocol = protocol;
 		return true;
 	}
 
 	bool Socket::close()
 	{
-		if (!this->opened)
+		if (!this->protocol)
 			return false;
 		closesocket(this->sockfd);
-		this->opened = false;
+		this->protocol = nullptr;
 		this->connected = false;
 		this->waitingConnection = false;
 		return true;
@@ -50,7 +49,7 @@ namespace libnet
 
 	bool Socket::shutdown()
 	{
-		if (!this->opened)
+		if (!this->protocol)
 			return false;
 #ifdef LIBNET_PLATFORM_WINDOWS
 		::shutdown(this->sockfd, SD_BOTH);
@@ -64,19 +63,35 @@ namespace libnet
 		return true;
 	}
 
-	bool Socket::connect(std::string host, uint16_t port)
+	bool Socket::connect(const std::string &host, uint16_t port)
 	{
-		if (!this->opened)
+		if (!this->protocol)
 			return false;
-		struct hostent *server;
-		if (!(server = gethostbyname(host.c_str())))
+		std::string service(std::to_string(port));
+		struct addrinfo *result = nullptr;
+		struct addrinfo hints;
+		hints.ai_flags = 0;
+		hints.ai_family = this->protocol->domain;
+		hints.ai_socktype = this->protocol->type;
+		hints.ai_protocol = this->protocol->protocol;
+		if (getaddrinfo(host.c_str(), service.c_str(), &hints, &result))
 			return false;
-		SOCKADDR_IN serv_addr;
-		std::memset(&serv_addr, 0, sizeof(serv_addr));
-		serv_addr.sin_family = AF_INET;
-		std::memcpy(&serv_addr.sin_addr.s_addr, server->h_addr, server->h_length);
-		serv_addr.sin_port = htons(port);
-		if (::connect(this->sockfd, (struct sockaddr*)&serv_addr, sizeof(serv_addr)) == SOCKET_ERROR)
+		if (!result)
+			return false;
+		switch (result->ai_family)
+		{
+			case AF_INET:
+				std::memcpy(&this->sockaddr_u.sockaddr_in, result->ai_addr, sizeof(struct sockaddr_in));
+				break;
+			case AF_INET6:
+				std::memcpy(&this->sockaddr_u.sockaddr_in6, result->ai_addr, sizeof(struct sockaddr_in6));
+				break;
+			default:
+				return false;
+		}
+		int ret = ::connect(this->sockfd, result->ai_addr, result->ai_addrlen);
+		freeaddrinfo(result);
+		if (ret == SOCKET_ERROR)
 		{
 #ifdef LIBNET_PLATFORM_WINDOWS
 			if (WSAGetLastError() != WSAEWOULDBLOCK)
@@ -90,7 +105,9 @@ namespace libnet
 			this->waitingConnection = true;
 		}
 		else
+		{
 			this->connected = true;
+		}
 		return true;
 	}
 
@@ -116,6 +133,7 @@ namespace libnet
 			socklen_t len = sizeof(err);
 			if (getsockopt(this->sockfd, SOL_SOCKET, SO_ERROR, (char*)&err, &len) == SOCKET_ERROR)
 				return -1;
+			std::cout << "err: " << err << std::endl;
 #ifdef LIBNET_PLATFORM_WINDOWS
 			if (err && err != WSAEINPROGRESS)
 				return -1;
@@ -228,7 +246,7 @@ namespace libnet
 
 	bool Socket::setNagle(bool active)
 	{
-		if (!this->opened)
+		if (!this->protocol)
 			return false;
 		int flag = active ? 1 : 0;
 		return setsockopt(this->sockfd, IPPROTO_TCP, TCP_NODELAY, reinterpret_cast<const char*>(const_cast<const int*>(&flag)), sizeof(flag)) == 0;
@@ -236,7 +254,7 @@ namespace libnet
 
 	bool Socket::setBlocking(bool blocking)
 	{
-		if (!this->opened)
+		if (!this->protocol)
 			return false;
 #ifdef LIBNET_PLATFORM_WINDOWS
 		u_long mode = blocking ? 0 : 1;
@@ -254,7 +272,7 @@ namespace libnet
 
 	bool Socket::setRecvTimeout(uint64_t timeout)
 	{
-		if (!this->opened)
+		if (!this->protocol)
 			return false;
 #ifdef LIBNET_PLATFORM_LINUX
 		struct timeval tv;
@@ -271,7 +289,7 @@ namespace libnet
 
 	bool Socket::setSendTimeout(uint64_t timeout)
 	{
-		if (!this->opened)
+		if (!this->protocol)
 			return false;
 #ifdef LIBNET_PLATFORM_LINUX
 		struct timeval tv;
@@ -284,6 +302,20 @@ namespace libnet
 #else
 #error Platform not supported
 #endif
+	}
+
+	size_t Socket::getIp(void *data)
+	{
+		switch (this->sockaddr_u.sockaddr.sa_family)
+		{
+			case AF_INET:
+				std::memcpy(data, &this->sockaddr_u.sockaddr_in.sin_addr, 4);
+				return 4;
+			case AF_INET6:
+				std::memcpy(data, &this->sockaddr_u.sockaddr_in6.sin6_addr, 16);
+				return 16;
+		}
+		return -1;
 	}
 
 }

@@ -16,27 +16,17 @@ namespace libnet
 
 	uint16_t Packet::b_ntohs(uint16_t value)
 	{
-		const uint16_t highPart = (value >> 8) & 0xFF;
-		const uint16_t lowPart = value & 0xFF;
-		return (lowPart << 8) | highPart;
+		return ((value & 0xff00) >> 8) | ((value & 0xff) << 8);
 	}
 
 	uint32_t Packet::b_ntohl(uint32_t value)
 	{
-		const uint16_t highVal = (value >> 16) & 0xFFFF;
-		const uint16_t lowVal = value & 0xFFFF;
-		const uint32_t highPart = b_ntohs(highVal);
-		const uint32_t lowPart = b_ntohs(lowVal);
-		return (lowPart << 16) | highPart;
+		return ((value >> 24) & 0xff) | ((value >> 8) & 0xff00) | ((value & 0xff00) << 8) | ((value & 0xff) << 24);
 	}
 
 	uint64_t Packet::b_ntohll(uint64_t value)
 	{
-		const uint32_t highVal = (value >> 32) & 0xFFFFFFFF;
-		const uint32_t lowVal = value & 0xFFFFFFFF;
-		const uint64_t highPart = b_ntohl(highVal);
-		const uint64_t lowPart = b_ntohl(lowVal);
-		return (lowPart << 32) | highPart;
+		return ((value >> 56) & 0xff) | ((value >> 40) & 0xff00) | ((value >> 24) & 0xff0000) | ((value >> 8) & 0xff000000 | ((value & 0xff000000) << 8) | ((value & 0xff0000) << 24) | ((value & 0xff00) << 40) | ((value & 0xff) << 56));
 	}
 
 	void Packet::writeBytes(const void *src, size_t len)
@@ -46,96 +36,96 @@ namespace libnet
 		std::memcpy(this->data.data() + pos, src, len);
 	}
 
-	void Packet::writeBool(const bool value)
+	void Packet::writeBool(bool value)
 	{
 		uint8_t val = value ? 1 : 0;
 		writeBytes(&val, 1);
 	}
 
-	void Packet::writeInt8(const int8_t value)
+	void Packet::writeInt8(int8_t value)
 	{
 		writeBytes(&value, 1);
 	}
 
-	void Packet::writeUInt8(const uint8_t value)
+	void Packet::writeUInt8(uint8_t value)
 	{
 		writeBytes(&value, 1);
 	}
 
-	void Packet::writeInt16(const int16_t value)
+	void Packet::writeInt16(int16_t value)
 	{
 #if __BYTE_ORDER == __LITTLE_ENDIAN
-		const uint16_t tmp = b_ntohs(*reinterpret_cast<const uint16_t*>(&value));
+		uint16_t tmp = b_ntohs(*reinterpret_cast<uint16_t*>(&value));
 		writeBytes(&tmp, 2);
 #else
 		writeBytes(&value, 2);
 #endif
 	}
 
-	void Packet::writeUInt16(const uint16_t value)
+	void Packet::writeUInt16(uint16_t value)
 	{
 #if __BYTE_ORDER == __LITTLE_ENDIAN
-		const uint16_t tmp = b_ntohs(*reinterpret_cast<const uint16_t*>(&value));
+		uint16_t tmp = b_ntohs(*reinterpret_cast<uint16_t*>(&value));
 		writeBytes(&tmp, 2);
 #else
 		writeBytes(&value, 2);
 #endif
 	}
 
-	void Packet::writeInt32(const int32_t value)
+	void Packet::writeInt32(int32_t value)
 	{
 #if __BYTE_ORDER == __LITTLE_ENDIAN
-		const uint32_t tmp = b_ntohl(*reinterpret_cast<const uint32_t*>(&value));
+		uint32_t tmp = b_ntohl(*reinterpret_cast<uint32_t*>(&value));
 		writeBytes(&tmp, 4);
 #else
 		writeBytes(&value, 4);
 #endif
 	}
 
-	void Packet::writeUInt32(const uint32_t value)
+	void Packet::writeUInt32(uint32_t value)
 	{
 #if __BYTE_ORDER == __LITTLE_ENDIAN
-		const uint32_t tmp = b_ntohl(*reinterpret_cast<const uint32_t*>(&value));
+		uint32_t tmp = b_ntohl(*reinterpret_cast<uint32_t*>(&value));
 		writeBytes(&tmp, 4);
 #else
 		writeBytes(&value, 4);
 #endif
 	}
 
-	void Packet::writeInt64(const int64_t value)
+	void Packet::writeInt64(int64_t value)
 	{
 #if __BYTE_ORDER == __LITTLE_ENDIAN
-		const uint64_t tmp = b_ntohll(*reinterpret_cast<const uint64_t*>(&value));
+		uint64_t tmp = b_ntohll(*reinterpret_cast<uint64_t*>(&value));
 		writeBytes(&tmp, 8);
 #else
 		writeBytes(&value, 8);
 #endif
 	}
 
-	void Packet::writeUInt64(const uint64_t value)
+	void Packet::writeUInt64(uint64_t value)
 	{
 #if __BYTE_ORDER == __LITTLE_ENDIAN
-		const uint64_t tmp = b_ntohll(*reinterpret_cast<const uint64_t*>(&value));
+		uint64_t tmp = b_ntohll(*reinterpret_cast<uint64_t*>(&value));
 		writeBytes(&tmp, 8);
 #else
 		writeBytes(&value, 8);
 #endif
 	}
 
-	void Packet::writeFloat(const float value)
+	void Packet::writeFloat(float value)
 	{
 #if __BYTE_ORDER == __LITTLE_ENDIAN
-		const uint32_t tmp = b_ntohl(*reinterpret_cast<const uint32_t*>(&value));
+		uint32_t tmp = b_ntohl(*reinterpret_cast<uint32_t*>(&value));
 		writeBytes(&tmp, 4);
 #else
 		writeBytes(&value, 4);
 #endif
 	}
 
-	void Packet::writeDouble(const double value)
+	void Packet::writeDouble(double value)
 	{
 #if __BYTE_ORDER == __LITTLE_ENDIAN
-		const uint64_t tmp = b_ntohll(*reinterpret_cast<const uint64_t*>(&value));
+		uint64_t tmp = b_ntohll(*reinterpret_cast<uint64_t*>(&value));
 		writeBytes(&tmp, 8);
 #else
 		writeBytes(&value, 8);

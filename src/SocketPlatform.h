@@ -19,7 +19,6 @@
 #  define closesocket(s) ::close(s)
 #  define INVALID_SOCKET -1
 #  define SOCKET_ERROR -1
-   typedef struct sockaddr_in SOCKADDR_IN;
    typedef socklen_t SOCKLEN_T;
    typedef int SOCKET;
 # else

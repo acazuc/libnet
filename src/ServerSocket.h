@@ -2,6 +2,7 @@
 # define LIBNET_SERVER_SOCKET_H
 
 # include "SocketPlatform.h"
+# include "Protocol.h"
 # include "Socket.h"
 # include <cstdint>
 
@@ -12,15 +13,20 @@ namespace libnet
 	{
 
 		private:
-			SOCKADDR_IN server_addr;
-			bool opened;
-			bool bound;
+			union
+			{
+				struct sockaddr sockaddr;
+				struct sockaddr_in sockaddr_in;
+				struct sockaddr_in6 sockaddr_in6;
+			} sockaddr_u;
+			const Protocol *protocol;
 			SOCKET sockfd;
+			bool bound;
 
 		public:
 			ServerSocket();
 			~ServerSocket();
-			bool open();
+			bool open(const Protocol *protocol);
 			bool close();
 			bool shutdown();
 			bool bind(uint16_t port);
