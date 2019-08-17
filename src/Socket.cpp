@@ -1,5 +1,4 @@
 #include "Socket.h"
-#include <iostream>
 #include <cstring>
 
 namespace libnet
@@ -133,7 +132,6 @@ namespace libnet
 			socklen_t len = sizeof(err);
 			if (getsockopt(this->sockfd, SOL_SOCKET, SO_ERROR, (char*)&err, &len) == SOCKET_ERROR)
 				return -1;
-			std::cout << "err: " << err << std::endl;
 #ifdef LIBNET_PLATFORM_WINDOWS
 			if (err && err != WSAEINPROGRESS)
 				return -1;
